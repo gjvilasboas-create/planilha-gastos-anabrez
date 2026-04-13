@@ -464,6 +464,16 @@ td.amount.negative { color: var(--terracota); }
 .budget-values { text-align: right; white-space: nowrap; }
 .budget-spent { font-weight: 700; font-size: 0.9rem; }
 .budget-limit { font-size: 0.75rem; color: var(--text-muted); }
+.budget-group { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--gray-light); }
+.budget-group:last-of-type { border-bottom: none; }
+.budget-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0 8px;
+  font-size: 0.9rem;
+  color: var(--blue-night);
+}
 
 /* ======= FILTERS ======= */
 .filters-bar {
@@ -696,6 +706,24 @@ td.amount.negative { color: var(--terracota); }
       <h3 style="font-size:1rem;color:var(--blue-night);margin-bottom:12px">Meta de Economia</h3>
       <div id="dashGoalProgress"></div>
     </div>
+    <div class="card">
+      <h3 style="font-size:1rem;color:var(--blue-night);margin-bottom:12px">Gastos por Forma de Pagamento</h3>
+      <div id="dashPaymentBreakdown"></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
+    <div class="card" style="border-left:4px solid var(--blue-med)">
+      <h3 style="font-size:1rem;color:var(--blue-night);margin-bottom:8px">Saldo Disponível para Aplicação</h3>
+      <div id="dashSaldoAplicacao"></div>
+    </div>
+    <div class="card">
+      <h3 style="font-size:1rem;color:var(--blue-night);margin-bottom:8px">Recorrente vs Pontual</h3>
+      <div id="dashFreqBreakdown"></div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px">
     <div class="table-card">
       <div class="table-header"><h3>Últimos Lançamentos</h3></div>
       <div class="table-wrap"><table><thead><tr><th>Data</th><th>Descrição</th><th>Valor</th></tr></thead><tbody id="dashRecent"></tbody></table></div>
@@ -731,7 +759,7 @@ td.amount.negative { color: var(--terracota); }
     <div class="table-wrap">
       <table>
         <thead><tr>
-          <th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Valor</th><th>Conta</th><th>Tags</th><th style="width:80px">Ações</th>
+          <th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Valor</th><th>Pgto</th><th>Freq.</th><th>Conta</th><th style="width:80px">Ações</th>
         </tr></thead>
         <tbody id="transactionsBody"></tbody>
       </table>
@@ -797,12 +825,23 @@ td.amount.negative { color: var(--terracota); }
 <div class="tab-content" id="tab-categorias">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
-      <h2 style="color:var(--blue-night)">Categorias e Orçamento</h2>
-      <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px">Defina limites mensais para cada categoria</p>
+      <h2 style="color:var(--blue-night)">Balanço Patrimonial — Categorias</h2>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px">Razonete PF: Entradas vs Saídas com limites mensais</p>
     </div>
     <button class="btn btn-primary btn-sm" onclick="openCategoryModal()">+ Nova Categoria</button>
   </div>
-  <div class="card" id="budgetList"></div>
+
+  <!-- Receitas resumo -->
+  <div class="card" style="margin-bottom:16px;border-left:4px solid var(--blue-med)">
+    <h3 style="font-size:1rem;color:var(--blue-med);margin-bottom:12px">🟢 ENTRADAS (Receitas PF)</h3>
+    <div id="incomeCatList"></div>
+  </div>
+
+  <!-- Despesas detalhado -->
+  <div class="card" style="border-left:4px solid var(--terracota)">
+    <h3 style="font-size:1rem;color:var(--terracota);margin-bottom:12px">🔴 SAÍDAS (Despesas)</h3>
+    <div id="budgetList"></div>
+  </div>
 </div>
 
 <!-- ===== TAB: METAS ===== -->
@@ -873,9 +912,9 @@ td.amount.negative { color: var(--terracota); }
         </div>
         <div class="form-group">
           <label class="form-label">Tipo</label>
-          <select class="form-select" id="txType">
-            <option value="despesa">Despesa</option>
-            <option value="receita">Receita</option>
+          <select class="form-select" id="txType" onchange="updateTxCategorySelect()">
+            <option value="despesa">Despesa (Saída)</option>
+            <option value="receita">Receita (Entrada)</option>
           </select>
         </div>
       </div>
@@ -891,6 +930,29 @@ td.amount.negative { color: var(--terracota); }
         <div class="form-group">
           <label class="form-label">Categoria</label>
           <select class="form-select" id="txCategory"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Forma de Pagamento</label>
+          <select class="form-select" id="txPayment">
+            <option value="pix">PIX</option>
+            <option value="credito_vista">Crédito à Vista</option>
+            <option value="credito_parcelado">Crédito Parcelado</option>
+            <option value="debito">Débito</option>
+            <option value="va">Vale Alimentação</option>
+            <option value="vr">Vale Refeição</option>
+            <option value="dinheiro">Dinheiro</option>
+            <option value="boleto">Boleto</option>
+            <option value="transferencia">Transferência</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Frequência</label>
+          <select class="form-select" id="txFrequency">
+            <option value="pontual">Pontual</option>
+            <option value="recorrente">Recorrente</option>
+          </select>
         </div>
       </div>
       <div class="form-row">
@@ -940,9 +1002,33 @@ td.amount.negative { color: var(--terracota); }
     </div>
     <div class="modal-body">
       <input type="hidden" id="editCatId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" id="catGroup" onchange="document.getElementById('catParentGroup').style.display=this.value==='despesa'?'block':'none'">
+            <option value="despesa">🔴 Saída (Despesa)</option>
+            <option value="receita">🟢 Entrada (Receita)</option>
+          </select>
+        </div>
+        <div class="form-group" id="catParentGroup">
+          <label class="form-label">Grupo</label>
+          <select class="form-select" id="catParent">
+            <option value="1. Habitação">1. Habitação</option>
+            <option value="2. Alimentação">2. Alimentação</option>
+            <option value="3. Saúde">3. Saúde</option>
+            <option value="4. Educação">4. Educação</option>
+            <option value="5. Transporte">5. Transporte</option>
+            <option value="6. Despesas Financeiras">6. Despesas Financeiras</option>
+            <option value="7. Esportes e Bem-estar">7. Esportes e Bem-estar</option>
+            <option value="8. Outras Despesas">8. Outras Despesas</option>
+            <option value="9. Seguros">9. Seguros</option>
+            <option value="10. Investimentos">10. Investimentos</option>
+          </select>
+        </div>
+      </div>
       <div class="form-group">
         <label class="form-label">Nome</label>
-        <input type="text" class="form-input" id="catName" placeholder="Ex: Alimentação">
+        <input type="text" class="form-input" id="catName" placeholder="Ex: Aluguel e Condomínio">
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -986,16 +1072,96 @@ td.amount.negative { color: var(--terracota); }
 const STORAGE_KEY = 'anabrez_finance';
 
 const DEFAULT_CATEGORIES = [
-  { id: 'alimentacao', name: 'Alimentação', icon: '🍕', color: '#E8A98A', budget: 800 },
-  { id: 'transporte', name: 'Transporte', icon: '🚗', color: '#7A9BB5', budget: 400 },
-  { id: 'moradia', name: 'Moradia', icon: '🏠', color: '#3A6B99', budget: 2000 },
-  { id: 'saude', name: 'Saúde', icon: '💊', color: '#C8724A', budget: 300 },
-  { id: 'educacao', name: 'Educação', icon: '📚', color: '#2D5986', budget: 500 },
-  { id: 'lazer', name: 'Lazer', icon: '🎭', color: '#F2C9A8', budget: 400 },
-  { id: 'roupas', name: 'Roupas', icon: '👗', color: '#E6A817', budget: 300 },
-  { id: 'assinaturas', name: 'Assinaturas', icon: '📱', color: '#1B3A5C', budget: 200 },
-  { id: 'investimentos', name: 'Investimentos', icon: '📈', color: '#2D5986', budget: 0 },
-  { id: 'outros', name: 'Outros', icon: '📦', color: '#7A9BB5', budget: 500 },
+  // ═══════ 🟢 ENTRADAS (RECEITAS PF) ═══════
+  { id: 'prolabore', name: 'Pró-labore / Salário', icon: '💰', color: '#2D5986', budget: 0, group: 'receita' },
+  { id: 'salario_liq', name: 'Salário Líquido', icon: '💵', color: '#1B3A5C', budget: 0, group: 'receita' },
+  { id: 'dist_lucros', name: 'Distribuição de Lucros', icon: '💎', color: '#3A6B99', budget: 0, group: 'receita' },
+  { id: 'va_vr', name: 'Vale Alimentação / Refeição', icon: '🍽️', color: '#4CAF50', budget: 0, group: 'receita' },
+  { id: 'rendimentos', name: 'Rendimentos de Investimentos', icon: '📈', color: '#00897B', budget: 0, group: 'receita' },
+  { id: 'renda_extra', name: 'Renda Extra / Freelance', icon: '⚡', color: '#7A9BB5', budget: 0, group: 'receita' },
+  { id: 'ferias_13', name: 'Férias / 13º / Restituição IRPF', icon: '🎄', color: '#6B8DAD', budget: 0, group: 'receita' },
+  { id: 'outras_entradas', name: 'Outras Entradas / Devoluções', icon: '🔄', color: '#90A4AE', budget: 0, group: 'receita' },
+
+  // ═══════ 🔴 SAÍDAS — 1. Habitação ═══════
+  { id: 'aluguel', name: 'Aluguel / Financiamento Imobiliário', icon: '🏠', color: '#3A6B99', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'condominio', name: 'Condomínio', icon: '🏢', color: '#2D5986', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'iptu', name: 'IPTU', icon: '🏛️', color: '#1B3A5C', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'gas', name: 'Gás', icon: '🔥', color: '#F57C00', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'internet_tv', name: 'Internet / TV', icon: '📡', color: '#7A9BB5', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'luz', name: 'Luz', icon: '💡', color: '#FFB74D', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'telefone', name: 'Telefone (Fixo / Celular)', icon: '📱', color: '#5A7FA0', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'reformas', name: 'Reformas', icon: '🔨', color: '#8D6E63', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'manut_casa', name: 'Manutenção da Casa', icon: '🔧', color: '#6B8DAD', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'empregada', name: 'Empregada Doméstica / Diarista', icon: '🧹', color: '#A1887F', budget: 0, group: 'despesa', parent: '1. Habitação' },
+  { id: 'itens_casa', name: 'Itens para Casa / Atacadão', icon: '🛍️', color: '#78909C', budget: 0, group: 'despesa', parent: '1. Habitação' },
+
+  // ═══════ 🔴 SAÍDAS — 2. Alimentação ═══════
+  { id: 'supermercado', name: 'Supermercado', icon: '🛒', color: '#4CAF50', budget: 0, group: 'despesa', parent: '2. Alimentação' },
+  { id: 'restaurante', name: 'Restaurante', icon: '🍽️', color: '#66BB6A', budget: 0, group: 'despesa', parent: '2. Alimentação' },
+  { id: 'rest_trabalho', name: 'Restaurante Trabalho', icon: '🍱', color: '#81C784', budget: 0, group: 'despesa', parent: '2. Alimentação' },
+  { id: 'delivery', name: 'Delivery', icon: '🛵', color: '#E8A98A', budget: 0, group: 'despesa', parent: '2. Alimentação' },
+  { id: 'feira_acougue', name: 'Feira / Açougue', icon: '🥩', color: '#A5D6A7', budget: 0, group: 'despesa', parent: '2. Alimentação' },
+  { id: 'barzinho', name: 'Barzinho / Night', icon: '🍺', color: '#F2C9A8', budget: 0, group: 'despesa', parent: '2. Alimentação' },
+  { id: 'aniversario_alim', name: 'Aniversário (Alimentação)', icon: '🎂', color: '#FFCC80', budget: 0, group: 'despesa', parent: '2. Alimentação' },
+  { id: 'feriados_fest', name: 'Feriados / Festividades', icon: '🎉', color: '#FFE082', budget: 0, group: 'despesa', parent: '2. Alimentação' },
+
+  // ═══════ 🔴 SAÍDAS — 3. Saúde ═══════
+  { id: 'plano_saude', name: 'Plano de Saúde', icon: '🏥', color: '#E53935', budget: 0, group: 'despesa', parent: '3. Saúde' },
+  { id: 'consultas', name: 'Consultas (Médico / Fisio / Nutri)', icon: '🩺', color: '#C62828', budget: 0, group: 'despesa', parent: '3. Saúde' },
+  { id: 'farmacia', name: 'Farmácia', icon: '💊', color: '#C8724A', budget: 0, group: 'despesa', parent: '3. Saúde' },
+  { id: 'vacinas_proced', name: 'Vacinas / Procedimentos Estéticos', icon: '💉', color: '#EF5350', budget: 0, group: 'despesa', parent: '3. Saúde' },
+  { id: 'veterinaria', name: 'Veterinária', icon: '🐾', color: '#E57373', budget: 0, group: 'despesa', parent: '3. Saúde' },
+  { id: 'outros_saude', name: 'Outros Saúde', icon: '🏥', color: '#EF9A9A', budget: 0, group: 'despesa', parent: '3. Saúde' },
+
+  // ═══════ 🔴 SAÍDAS — 4. Educação ═══════
+  { id: 'escola', name: 'Mensalidade Escola / Faculdade / Curso / MBA', icon: '🎒', color: '#1565C0', budget: 0, group: 'despesa', parent: '4. Educação' },
+  { id: 'transp_escolar', name: 'Transporte Escolar / Passagem', icon: '🚌', color: '#42A5F5', budget: 0, group: 'despesa', parent: '4. Educação' },
+  { id: 'uniforme', name: 'Uniforme', icon: '👕', color: '#1976D2', budget: 0, group: 'despesa', parent: '4. Educação' },
+  { id: 'livros', name: 'Livros', icon: '📚', color: '#2196F3', budget: 0, group: 'despesa', parent: '4. Educação' },
+
+  // ═══════ 🔴 SAÍDAS — 5. Transporte ═══════
+  { id: 'financ_carro', name: 'Financiamento / Aluguel Carro', icon: '🚗', color: '#F57C00', budget: 0, group: 'despesa', parent: '5. Transporte' },
+  { id: 'combustivel', name: 'Combustível', icon: '⛽', color: '#FF9800', budget: 0, group: 'despesa', parent: '5. Transporte' },
+  { id: 'seguro_carro', name: 'Seguro Carro', icon: '🛡️', color: '#FFB74D', budget: 0, group: 'despesa', parent: '5. Transporte' },
+  { id: 'estacionamento', name: 'Estacionamento', icon: '🅿️', color: '#FFA726', budget: 0, group: 'despesa', parent: '5. Transporte' },
+  { id: 'pedagio', name: 'Pedágio / TAG', icon: '🛣️', color: '#FF8F00', budget: 0, group: 'despesa', parent: '5. Transporte' },
+  { id: 'uber_99', name: 'Uber / 99 / Cabify', icon: '🚕', color: '#FFE082', budget: 0, group: 'despesa', parent: '5. Transporte' },
+  { id: 'ipva', name: 'IPVA', icon: '📋', color: '#E65100', budget: 0, group: 'despesa', parent: '5. Transporte' },
+  { id: 'transp_publico', name: 'Transporte Público', icon: '🚇', color: '#FFCC80', budget: 0, group: 'despesa', parent: '5. Transporte' },
+  { id: 'manut_auto', name: 'Manutenção Veículo', icon: '🔧', color: '#BF360C', budget: 0, group: 'despesa', parent: '5. Transporte' },
+
+  // ═══════ 🔴 SAÍDAS — 6. Despesas Financeiras ═══════
+  { id: 'iof_juros', name: 'IOF / Juros', icon: '📉', color: '#546E7A', budget: 0, group: 'despesa', parent: '6. Despesas Financeiras' },
+  { id: 'tarifa_cc', name: 'Tarifa Mensal Conta Corrente', icon: '🏦', color: '#78909C', budget: 0, group: 'despesa', parent: '6. Despesas Financeiras' },
+  { id: 'parcelamento_dividas', name: 'Parcelamento de Dívidas', icon: '📊', color: '#455A64', budget: 0, group: 'despesa', parent: '6. Despesas Financeiras' },
+  { id: 'cartao_credito', name: 'Cartão de Crédito (Fatura)', icon: '💳', color: '#37474F', budget: 0, group: 'despesa', parent: '6. Despesas Financeiras' },
+  { id: 'anuidade_cartao', name: 'Anuidade Cartão de Crédito', icon: '🏷️', color: '#90A4AE', budget: 0, group: 'despesa', parent: '6. Despesas Financeiras' },
+  { id: 'capitalizacao', name: 'Capitalização / PIC', icon: '📑', color: '#B0BEC5', budget: 0, group: 'despesa', parent: '6. Despesas Financeiras' },
+
+  // ═══════ 🔴 SAÍDAS — 7. Esportes e Bem-estar ═══════
+  { id: 'jiujitsu', name: 'Jiu-Jitsu / Artes Marciais', icon: '🥋', color: '#6D4C41', budget: 0, group: 'despesa', parent: '7. Esportes e Bem-estar' },
+  { id: 'equip_suplementos', name: 'Equipamentos e Suplementação', icon: '💪', color: '#8D6E63', budget: 0, group: 'despesa', parent: '7. Esportes e Bem-estar' },
+  { id: 'academia', name: 'Academia / Personal Trainer', icon: '🏋️', color: '#A1887F', budget: 0, group: 'despesa', parent: '7. Esportes e Bem-estar' },
+
+  // ═══════ 🔴 SAÍDAS — 8. Outras Despesas ═══════
+  { id: 'assinaturas', name: 'Assinaturas (Spotify, Netflix, iCloud...)', icon: '📱', color: '#AB47BC', budget: 0, group: 'despesa', parent: '8. Outras Despesas' },
+  { id: 'barbearia_salao', name: 'Barbearia / Salão de Beleza', icon: '✂️', color: '#CE93D8', budget: 0, group: 'despesa', parent: '8. Outras Despesas' },
+  { id: 'lazer', name: 'Lazer (Cinema, Teatro, Shows, Festas)', icon: '🎭', color: '#F2C9A8', budget: 0, group: 'despesa', parent: '8. Outras Despesas' },
+  { id: 'presentes', name: 'Presentes', icon: '🎁', color: '#E1BEE7', budget: 0, group: 'despesa', parent: '8. Outras Despesas' },
+  { id: 'vestuario', name: 'Vestuário', icon: '👔', color: '#BA68C8', budget: 0, group: 'despesa', parent: '8. Outras Despesas' },
+  { id: 'saques', name: 'Saques', icon: '🏧', color: '#90A4AE', budget: 0, group: 'despesa', parent: '8. Outras Despesas' },
+  { id: 'compras_geral', name: 'Compras Gerais', icon: '🛍️', color: '#B0BEC5', budget: 0, group: 'despesa', parent: '8. Outras Despesas' },
+  { id: 'viagens', name: 'Viagens', icon: '✈️', color: '#E8A98A', budget: 0, group: 'despesa', parent: '8. Outras Despesas' },
+  { id: 'nao_identificado', name: 'Outros (Não Identificados)', icon: '❓', color: '#CFD8DC', budget: 0, group: 'despesa', parent: '8. Outras Despesas' },
+
+  // ═══════ 🔴 SAÍDAS — 9. Seguros ═══════
+  { id: 'seguro_vida', name: 'Seguros (Vida, Prestamista)', icon: '🛡️', color: '#546E7A', budget: 0, group: 'despesa', parent: '9. Seguros' },
+
+  // ═══════ 🔴 SAÍDAS — 10. Investimentos ═══════
+  { id: 'previdencia', name: 'Previdência Privada', icon: '🏖️', color: '#00897B', budget: 0, group: 'despesa', parent: '10. Investimentos' },
+  { id: 'gestao_risco', name: 'Gestão de Risco', icon: '⚖️', color: '#26A69A', budget: 0, group: 'despesa', parent: '10. Investimentos' },
+  { id: 'aplicacao_prog', name: 'Aplicação Programada', icon: '📊', color: '#4DB6AC', budget: 0, group: 'despesa', parent: '10. Investimentos' },
+  { id: 'outros_invest', name: 'Outros Investimentos', icon: '📈', color: '#80CBC4', budget: 0, group: 'despesa', parent: '10. Investimentos' },
 ];
 
 var data = {
@@ -1060,7 +1226,12 @@ function toast(msg, type = 'success') {
   setTimeout(() => el.remove(), 3000);
 }
 
-function getCatById(id) { return data.categories.find(c => c.id === id) || { name: 'Outros', icon: '📦', color: '#7A9BB5' }; }
+function getCatById(id) { return data.categories.find(c => c.id === id) || { name: 'Outros', icon: '📦', color: '#7A9BB5', group: 'despesa', parent: '8. Outras Despesas' }; }
+
+const PAYMENT_LABELS = { pix: 'PIX', credito_vista: 'Créd. Vista', credito_parcelado: 'Créd. Parc.', debito: 'Débito', va: 'VA', vr: 'VR', dinheiro: 'Dinheiro', boleto: 'Boleto', transferencia: 'Transf.' };
+const FREQ_LABELS = { pontual: 'Pontual', recorrente: 'Recorrente' };
+function getPaymentLabel(p) { return PAYMENT_LABELS[p] || p || '-'; }
+function getFreqLabel(f) { return FREQ_LABELS[f] || f || '-'; }
 
 // ============================================================
 // TAB SWITCHING
@@ -1170,6 +1341,47 @@ function renderDashboard() {
     <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">${goalPct >= 100 ? '🎉 Meta atingida!' : `${goalPct.toFixed(0)}% da meta`}</div>
   `;
 
+  // Payment breakdown
+  const paymentTotals = {};
+  txs.filter(t => t.type === 'despesa').forEach(t => {
+    const p = t.payment || 'pix';
+    paymentTotals[p] = (paymentTotals[p] || 0) + t.amount;
+  });
+  const sortedPayments = Object.entries(paymentTotals).sort((a, b) => b[1] - a[1]);
+  document.getElementById('dashPaymentBreakdown').innerHTML = sortedPayments.length ? sortedPayments.map(([p, v]) => `
+    <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.85rem">
+      <span>${getPaymentLabel(p)}</span>
+      <span style="font-weight:600;color:var(--terracota)">${formatBRL(v)}</span>
+    </div>
+  `).join('') + `<div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1.5px solid var(--gray-light);margin-top:4px;font-weight:700;font-size:0.9rem">
+    <span>Total</span><span style="color:var(--terracota)">${formatBRL(expense)}</span>
+  </div>` : '<p style="color:var(--text-muted);font-size:0.85rem">Sem dados</p>';
+
+  // Saldo disponível para aplicação (receita - despesas excluindo investimentos)
+  const investCats = ['previdencia', 'gestao_risco', 'aplicacao_prog', 'outros_invest'];
+  const investTotal = txs.filter(t => t.type === 'despesa' && investCats.includes(t.category)).reduce((s, t) => s + t.amount, 0);
+  const despesasReais = expense - investTotal;
+  const saldoAplicacao = income - despesasReais;
+  document.getElementById('dashSaldoAplicacao').innerHTML = `
+    <div class="card-value ${saldoAplicacao >= 0 ? 'positive' : 'negative'}" style="font-size:1.4rem">${formatBRL(saldoAplicacao)}</div>
+    <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Receitas (${formatBRL(income)}) - Despesas sem investimentos (${formatBRL(despesasReais)})</div>
+    ${investTotal > 0 ? `<div style="font-size:0.78rem;color:var(--blue-med);margin-top:2px">Já investido este mês: ${formatBRL(investTotal)}</div>` : ''}
+  `;
+
+  // Frequency breakdown
+  const recorrente = txs.filter(t => t.type === 'despesa' && t.frequency === 'recorrente').reduce((s, t) => s + t.amount, 0);
+  const pontual = txs.filter(t => t.type === 'despesa' && t.frequency !== 'recorrente').reduce((s, t) => s + t.amount, 0);
+  const recPct = expense > 0 ? (recorrente / expense * 100) : 0;
+  document.getElementById('dashFreqBreakdown').innerHTML = expense > 0 ? `
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:4px">
+      <span>Recorrentes</span><span style="font-weight:600">${formatBRL(recorrente)} (${recPct.toFixed(0)}%)</span>
+    </div>
+    <div class="progress-bar" style="margin-bottom:8px"><div class="progress-fill green" style="width:${recPct}%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:0.85rem">
+      <span>Pontuais</span><span style="font-weight:600">${formatBRL(pontual)} (${(100-recPct).toFixed(0)}%)</span>
+    </div>
+  ` : '<p style="color:var(--text-muted);font-size:0.85rem">Sem dados</p>';
+
   // Recent
   const recent = [...data.transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   document.getElementById('dashRecent').innerHTML = recent.length ? recent.map(t => `
@@ -1206,7 +1418,7 @@ function renderTransactions() {
   if (txs.length === 0) {
     body.innerHTML = '';
     empty.style.display = data.transactions.length === 0 ? 'block' : 'none';
-    if (data.transactions.length > 0) body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">Nenhum resultado para os filtros selecionados</td></tr>';
+    if (data.transactions.length > 0) body.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:24px">Nenhum resultado para os filtros selecionados</td></tr>';
     return;
   }
   empty.style.display = 'none';
@@ -1221,8 +1433,9 @@ function renderTransactions() {
       <td><span class="badge"><span class="badge-dot" style="background:${cat.color}"></span>${cat.name}</span></td>
       <td><span style="color:${t.type==='receita'?'var(--blue-med)':'var(--terracota)'};font-weight:600;font-size:0.78rem;text-transform:uppercase">${t.type}</span></td>
       <td class="amount ${t.type==='receita'?'positive':'negative'}">${t.type==='despesa'?'-':'+'} ${formatBRL(t.amount)}</td>
+      <td style="font-size:0.75rem"><span class="tag">${getPaymentLabel(t.payment)}</span></td>
+      <td style="font-size:0.75rem;color:${t.frequency==='recorrente'?'var(--blue-med)':'var(--text-muted)'}">${getFreqLabel(t.frequency)}</td>
       <td style="font-size:0.8rem;color:var(--text-muted)">${t.account||'-'}</td>
-      <td>${tags||'<span style="color:var(--text-muted)">-</span>'}</td>
       <td>
         <button class="btn-icon" onclick="editTransaction('${t.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
         <button class="btn-icon" onclick="deleteTransaction('${t.id}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
@@ -1238,7 +1451,8 @@ function openAddModal() {
   document.getElementById('txType').value = 'despesa';
   document.getElementById('txDesc').value = '';
   document.getElementById('txAmount').value = '';
-  document.getElementById('txCategory').value = data.categories[0]?.id || '';
+  document.getElementById('txPayment').value = 'pix';
+  document.getElementById('txFrequency').value = 'pontual';
   document.getElementById('txAccount').value = '';
   document.getElementById('txTags').value = '';
   document.getElementById('txRecurrent').checked = false;
@@ -1246,6 +1460,7 @@ function openAddModal() {
   document.getElementById('txRecurrence').style.display = 'none';
   document.getElementById('txInstallmentFields').style.display = 'none';
   populateCategorySelects();
+  updateTxCategorySelect();
   openModal('modalTransaction');
 }
 
@@ -1261,6 +1476,8 @@ function editTransaction(id) {
   document.getElementById('txCategory').value = t.category;
   document.getElementById('txAccount').value = t.account || '';
   document.getElementById('txTags').value = t.tags || '';
+  document.getElementById('txPayment').value = t.payment || 'pix';
+  document.getElementById('txFrequency').value = t.frequency || 'pontual';
   document.getElementById('txRecurrent').checked = !!t.recurrent;
   document.getElementById('txRecurrence').style.display = t.recurrent ? 'block' : 'none';
   if (t.recurrent) document.getElementById('txRecurrence').value = t.recurrence || 'mensal';
@@ -1283,6 +1500,8 @@ function saveTransaction() {
     description: document.getElementById('txDesc').value.trim(),
     amount: parseBRL(document.getElementById('txAmount').value),
     category: document.getElementById('txCategory').value,
+    payment: document.getElementById('txPayment').value,
+    frequency: document.getElementById('txFrequency').value,
     account: document.getElementById('txAccount').value.trim(),
     tags: document.getElementById('txTags').value.trim(),
     recurrent: document.getElementById('txRecurrent').checked,
@@ -1530,30 +1749,89 @@ function cancelImport() {
 // ============================================================
 function renderBudget() {
   const month = getCurrentMonth();
-  const txs = data.transactions.filter(t => t.date.startsWith(month) && t.type === 'despesa');
 
-  const html = data.categories.map(cat => {
-    const spent = txs.filter(t => t.category === cat.id).reduce((s, t) => s + t.amount, 0);
-    const pct = cat.budget > 0 ? (spent / cat.budget) * 100 : 0;
-    const barClass = pct >= 100 ? 'red' : pct >= 75 ? 'yellow' : 'green';
-    return `
-    <div class="budget-row">
+  // Render income categories
+  const incomeTxs = data.transactions.filter(t => t.date.startsWith(month) && t.type === 'receita');
+  const incomeCats = data.categories.filter(c => c.group === 'receita');
+  let totalIncome = 0;
+  let incHtml = incomeCats.map(cat => {
+    const received = incomeTxs.filter(t => t.category === cat.id).reduce((s, t) => s + t.amount, 0);
+    totalIncome += received;
+    return `<div class="budget-row">
       <div class="budget-icon" style="background:${cat.color}20;color:${cat.color}">${cat.icon}</div>
-      <div class="budget-info">
-        <div class="budget-name">${cat.name}</div>
-        <div class="budget-detail">${cat.budget > 0 ? `Limite: ${formatBRL(cat.budget)}` : 'Sem limite definido'}</div>
-        ${cat.budget > 0 ? `<div class="budget-bar"><div class="progress-bar"><div class="progress-fill ${barClass}" style="width:${Math.min(pct,100)}%"></div></div></div>` : ''}
-      </div>
-      <div class="budget-values">
-        <div class="budget-spent" style="color:${pct>=100?'var(--terracota)':'var(--text)'}">${formatBRL(spent)}</div>
-        ${cat.budget > 0 ? `<div class="budget-limit">${pct.toFixed(0)}%</div>` : ''}
-      </div>
+      <div class="budget-info"><div class="budget-name">${cat.name}</div></div>
+      <div class="budget-values"><div class="budget-spent" style="color:var(--blue-med)">${formatBRL(received)}</div></div>
       <div>
         <button class="btn-icon" onclick="editCategory('${cat.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-        <button class="btn-icon" onclick="deleteCategory('${cat.id}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>
     </div>`;
   }).join('');
+  incHtml += `<div style="padding:12px 0;border-top:2px solid var(--blue-med);display:flex;justify-content:space-between">
+    <strong style="color:var(--blue-night)">TOTAL ENTRADAS</strong>
+    <strong style="color:var(--blue-med);font-size:1.1rem">${formatBRL(totalIncome)}</strong>
+  </div>`;
+  document.getElementById('incomeCatList').innerHTML = incHtml;
+
+  const txs = data.transactions.filter(t => t.date.startsWith(month) && t.type === 'despesa');
+  const despCats = data.categories.filter(c => c.group === 'despesa');
+  const parents = [...new Set(despCats.map(c => c.parent || 'Outros'))];
+
+  let html = '';
+  let totalSpent = 0, totalBudget = 0;
+
+  parents.forEach(parent => {
+    const cats = despCats.filter(c => (c.parent || 'Outros') === parent);
+    const groupSpent = cats.reduce((s, cat) => s + txs.filter(t => t.category === cat.id).reduce((s2, t) => s2 + t.amount, 0), 0);
+    const groupBudget = cats.reduce((s, cat) => s + (cat.budget || 0), 0);
+    totalSpent += groupSpent;
+    totalBudget += groupBudget;
+    const groupPct = groupBudget > 0 ? (groupSpent / groupBudget) * 100 : 0;
+    const groupBarClass = groupPct >= 100 ? 'red' : groupPct >= 75 ? 'yellow' : 'green';
+
+    html += `<div class="budget-group">
+      <div class="budget-group-header">
+        <div><strong>${parent}</strong> <span style="font-size:0.78rem;color:var(--text-muted)">(${cats.length} subcategorias)</span></div>
+        <div style="text-align:right">
+          <span style="font-weight:700;color:${groupPct>=100?'var(--terracota)':'var(--text)'}">${formatBRL(groupSpent)}</span>
+          ${groupBudget > 0 ? `<span style="font-size:0.78rem;color:var(--text-muted)"> / ${formatBRL(groupBudget)}</span>` : ''}
+        </div>
+      </div>
+      ${groupBudget > 0 ? `<div class="progress-bar" style="margin-bottom:8px"><div class="progress-fill ${groupBarClass}" style="width:${Math.min(groupPct,100)}%"></div></div>` : ''}`;
+
+    cats.forEach(cat => {
+      const spent = txs.filter(t => t.category === cat.id).reduce((s, t) => s + t.amount, 0);
+      const pct = cat.budget > 0 ? (spent / cat.budget) * 100 : 0;
+      const barClass = pct >= 100 ? 'red' : pct >= 75 ? 'yellow' : 'green';
+      html += `
+      <div class="budget-row">
+        <div class="budget-icon" style="background:${cat.color}20;color:${cat.color}">${cat.icon}</div>
+        <div class="budget-info">
+          <div class="budget-name">${cat.name}</div>
+          <div class="budget-detail">${cat.budget > 0 ? `Limite: ${formatBRL(cat.budget)}` : 'Sem limite definido'}</div>
+          ${cat.budget > 0 ? `<div class="budget-bar"><div class="progress-bar"><div class="progress-fill ${barClass}" style="width:${Math.min(pct,100)}%"></div></div></div>` : ''}
+        </div>
+        <div class="budget-values">
+          <div class="budget-spent" style="color:${pct>=100?'var(--terracota)':'var(--text)'}">${formatBRL(spent)}</div>
+          ${cat.budget > 0 ? `<div class="budget-limit">${pct.toFixed(0)}%</div>` : ''}
+        </div>
+        <div>
+          <button class="btn-icon" onclick="editCategory('${cat.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+          <button class="btn-icon" onclick="deleteCategory('${cat.id}')" title="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  // Totalizador geral
+  const totalPct = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+  html += `<div style="padding:16px 0;border-top:2px solid var(--blue-night);margin-top:8px;display:flex;justify-content:space-between;align-items:center">
+    <strong style="font-size:1rem;color:var(--blue-night)">TOTAL DESPESAS DO MÊS</strong>
+    <div style="text-align:right">
+      <span style="font-size:1.1rem;font-weight:700;color:var(--terracota)">${formatBRL(totalSpent)}</span>
+      ${totalBudget > 0 ? `<span style="font-size:0.82rem;color:var(--text-muted)"> / ${formatBRL(totalBudget)} (${totalPct.toFixed(0)}%)</span>` : ''}
+    </div>
+  </div>`;
 
   document.getElementById('budgetList').innerHTML = html || '<div class="empty-state"><p>Nenhuma categoria criada</p></div>';
 }
@@ -1561,6 +1839,9 @@ function renderBudget() {
 function openCategoryModal() {
   document.getElementById('modalCatTitle').textContent = 'Nova Categoria';
   document.getElementById('editCatId').value = '';
+  document.getElementById('catGroup').value = 'despesa';
+  document.getElementById('catParent').value = 'Outros';
+  document.getElementById('catParentGroup').style.display = 'block';
   document.getElementById('catName').value = '';
   document.getElementById('catIcon').value = '';
   document.getElementById('catColor').value = '#C8724A';
@@ -1573,6 +1854,9 @@ function editCategory(id) {
   if (!cat) return;
   document.getElementById('modalCatTitle').textContent = 'Editar Categoria';
   document.getElementById('editCatId').value = cat.id;
+  document.getElementById('catGroup').value = cat.group || 'despesa';
+  document.getElementById('catParent').value = cat.parent || 'Outros';
+  document.getElementById('catParentGroup').style.display = (cat.group || 'despesa') === 'despesa' ? 'block' : 'none';
   document.getElementById('catName').value = cat.name;
   document.getElementById('catIcon').value = cat.icon;
   document.getElementById('catColor').value = cat.color;
@@ -1582,12 +1866,15 @@ function editCategory(id) {
 
 function saveCategory() {
   const id = document.getElementById('editCatId').value;
+  const group = document.getElementById('catGroup').value;
   const cat = {
     id: id || genId(),
     name: document.getElementById('catName').value.trim(),
     icon: document.getElementById('catIcon').value || '📦',
     color: document.getElementById('catColor').value,
     budget: parseBRL(document.getElementById('catBudget').value),
+    group: group,
+    parent: group === 'despesa' ? document.getElementById('catParent').value : undefined,
   };
   if (!cat.name) { toast('Digite um nome para a categoria', 'error'); return; }
   if (id) {
@@ -1599,6 +1886,7 @@ function saveCategory() {
   saveData();
   closeModal('modalCategory');
   renderBudget();
+  populateCategorySelects();
   toast('Categoria salva!');
 }
 
@@ -1730,15 +2018,48 @@ function renderReport() {
 // POPULATE CATEGORY SELECTS
 // ============================================================
 function populateCategorySelects() {
-  const selects = [document.getElementById('txCategory'), document.getElementById('filterCategory')];
-  selects.forEach(sel => {
-    if (!sel) return;
-    const val = sel.value;
-    const isFilter = sel.id === 'filterCategory';
-    sel.innerHTML = (isFilter ? '<option value="">Todas as categorias</option>' : '') +
-      data.categories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
-    if (val) sel.value = val;
-  });
+  // Filter category (all)
+  const filterSel = document.getElementById('filterCategory');
+  if (filterSel) {
+    const val = filterSel.value;
+    let html = '<option value="">Todas as categorias</option>';
+    html += '<optgroup label="🟢 ENTRADAS">';
+    data.categories.filter(c => c.group === 'receita').forEach(c => { html += `<option value="${c.id}">${c.icon} ${c.name}</option>`; });
+    html += '</optgroup>';
+    // Group despesas by parent
+    const parents = [...new Set(data.categories.filter(c => c.group === 'despesa').map(c => c.parent || 'Outros'))];
+    parents.forEach(p => {
+      html += `<optgroup label="🔴 ${p}">`;
+      data.categories.filter(c => c.group === 'despesa' && (c.parent || 'Outros') === p).forEach(c => { html += `<option value="${c.id}">${c.icon} ${c.name}</option>`; });
+      html += '</optgroup>';
+    });
+    filterSel.innerHTML = html;
+    if (val) filterSel.value = val;
+  }
+
+  // Transaction category (filtered by type)
+  updateTxCategorySelect();
+}
+
+function updateTxCategorySelect() {
+  const txCatSel = document.getElementById('txCategory');
+  if (!txCatSel) return;
+  const val = txCatSel.value;
+  const txType = document.getElementById('txType')?.value || 'despesa';
+  const matchGroup = txType === 'receita' ? 'receita' : 'despesa';
+  let html = '';
+  if (matchGroup === 'receita') {
+    data.categories.filter(c => c.group === 'receita').forEach(c => { html += `<option value="${c.id}">${c.icon} ${c.name}</option>`; });
+  } else {
+    const parents = [...new Set(data.categories.filter(c => c.group === 'despesa').map(c => c.parent || 'Outros'))];
+    parents.forEach(p => {
+      html += `<optgroup label="${p}">`;
+      data.categories.filter(c => c.group === 'despesa' && (c.parent || 'Outros') === p).forEach(c => { html += `<option value="${c.id}">${c.icon} ${c.name}</option>`; });
+      html += '</optgroup>';
+    });
+  }
+  txCatSel.innerHTML = html;
+  if (val && txCatSel.querySelector(`option[value="${val}"]`)) txCatSel.value = val;
 }
 
 // ============================================================
@@ -1746,20 +2067,52 @@ function populateCategorySelects() {
 // ============================================================
 function loadDemoData() {
   data.categories = [...DEFAULT_CATEGORIES];
-  data.savingsGoal = 500;
+  data.savingsGoal = 2000;
   data.transactions = [];
 
-  const descs = {
-    alimentacao: ['Supermercado Carrefour', 'iFood Restaurante', 'Padaria São José', 'McDonald\'s', 'Açougue Central'],
-    transporte: ['Uber Trip', '99 Pop', 'Combustível Shell', 'Estacionamento Shopping'],
-    moradia: ['Aluguel', 'Condomínio', 'ENEL Energia', 'SABESP Água'],
-    saude: ['Farmácia Drogasil', 'Consulta Médica', 'Academia SmartFit'],
-    educacao: ['Curso Udemy', 'Livro Amazon'],
-    lazer: ['Netflix', 'Cinema Cinemark', 'Spotify'],
-    roupas: ['Renner', 'Zara', 'Shein'],
-    assinaturas: ['Disney+', 'iCloud', 'Claro Internet'],
-    investimentos: ['Aporte Tesouro Direto', 'Ações via XP'],
-    outros: ['Presente Aniversário', 'Manutenção Celular'],
+  // Despesas realistas — { d: descrição, v: valor, p: pagamento, f: frequência }
+  const despesas = {
+    aluguel: [{ d: 'Aluguel Apartamento', v: 2800, p: 'boleto', f: 'recorrente' }],
+    condominio: [{ d: 'Condomínio', v: 650, p: 'boleto', f: 'recorrente' }],
+    iptu: [{ d: 'IPTU Parcela Mensal', v: 280, p: 'boleto', f: 'recorrente' }],
+    gas: [{ d: 'Gás de Cozinha', v: 110, p: 'pix', f: 'pontual' }],
+    internet_tv: [{ d: 'Claro Internet + TV', v: 180, p: 'debito', f: 'recorrente' }],
+    luz: [{ d: 'ENEL Energia', v: 220, p: 'debito', f: 'recorrente' }],
+    telefone: [{ d: 'Celular Vivo', v: 85, p: 'debito', f: 'recorrente' }],
+    manut_casa: [{ d: 'Manutenção Casa', v: 180, p: 'pix', f: 'pontual' }],
+    empregada: [{ d: 'Diarista Semanal', v: 560, p: 'pix', f: 'recorrente' }],
+    itens_casa: [{ d: 'Atacadão Itens Casa', v: 350, p: 'credito_vista', f: 'pontual' }],
+    supermercado: [{ d: 'Supermercado Carrefour', v: 480, p: 'credito_vista', f: 'recorrente' }, { d: 'Padaria São José', v: 85, p: 'debito', f: 'pontual' }],
+    restaurante: [{ d: 'Restaurante Almoço', v: 180, p: 'credito_vista', f: 'pontual' }],
+    rest_trabalho: [{ d: 'Almoço Trabalho', v: 320, p: 'vr', f: 'recorrente' }],
+    delivery: [{ d: 'iFood Delivery', v: 150, p: 'credito_vista', f: 'pontual' }],
+    feira_acougue: [{ d: 'Feira / Açougue', v: 120, p: 'pix', f: 'recorrente' }],
+    barzinho: [{ d: 'Barzinho Sexta', v: 95, p: 'credito_vista', f: 'pontual' }],
+    plano_saude: [{ d: 'Plano de Saúde Unimed', v: 1350, p: 'debito', f: 'recorrente' }],
+    consultas: [{ d: 'Consulta Dermatologista', v: 280, p: 'pix', f: 'pontual' }],
+    farmacia: [{ d: 'Drogasil Medicamentos', v: 120, p: 'credito_vista', f: 'pontual' }],
+    escola: [{ d: 'Mensalidade Escola', v: 1400, p: 'boleto', f: 'recorrente' }],
+    transp_escolar: [{ d: 'Transporte Escolar', v: 380, p: 'pix', f: 'recorrente' }],
+    livros: [{ d: 'Livro Amazon', v: 65, p: 'credito_vista', f: 'pontual' }],
+    combustivel: [{ d: 'Shell Combustível', v: 250, p: 'credito_vista', f: 'recorrente' }],
+    seguro_carro: [{ d: 'Seguro Porto Seguro', v: 320, p: 'debito', f: 'recorrente' }],
+    uber_99: [{ d: 'Uber Trip', v: 85, p: 'credito_vista', f: 'pontual' }],
+    ipva: [{ d: 'IPVA Provisão', v: 280, p: 'boleto', f: 'recorrente' }],
+    pedagio: [{ d: 'TAG Sem Parar', v: 45, p: 'debito', f: 'recorrente' }],
+    manut_auto: [{ d: 'Troca de Óleo', v: 180, p: 'pix', f: 'pontual' }],
+    tarifa_cc: [{ d: 'Tarifa Conta Corrente', v: 25, p: 'debito', f: 'recorrente' }],
+    jiujitsu: [{ d: 'Mensalidade Jiu-Jitsu', v: 280, p: 'pix', f: 'recorrente' }],
+    equip_suplementos: [{ d: 'Whey Protein Growth', v: 120, p: 'credito_vista', f: 'pontual' }],
+    academia: [{ d: 'SmartFit Mensalidade', v: 110, p: 'debito', f: 'recorrente' }],
+    assinaturas: [{ d: 'Netflix', v: 45, p: 'credito_vista', f: 'recorrente' }, { d: 'Spotify', v: 22, p: 'credito_vista', f: 'recorrente' }, { d: 'iCloud', v: 21, p: 'credito_vista', f: 'recorrente' }, { d: 'ChatGPT Plus', v: 100, p: 'credito_vista', f: 'recorrente' }],
+    barbearia_salao: [{ d: 'Barbearia', v: 80, p: 'pix', f: 'recorrente' }],
+    lazer: [{ d: 'Cinema Cinemark', v: 75, p: 'credito_vista', f: 'pontual' }],
+    vestuario: [{ d: 'Renner Roupas', v: 220, p: 'credito_parcelado', f: 'pontual' }],
+    viagens: [{ d: 'Provisão Viagem', v: 500, p: 'transferencia', f: 'recorrente' }],
+    presentes: [{ d: 'Presente Aniversário', v: 120, p: 'credito_vista', f: 'pontual' }],
+    seguro_vida: [{ d: 'Seguro de Vida', v: 180, p: 'debito', f: 'recorrente' }],
+    previdencia: [{ d: 'Previdência Privada', v: 300, p: 'transferencia', f: 'recorrente' }],
+    aplicacao_prog: [{ d: 'Aporte XP Investimentos', v: 2000, p: 'transferencia', f: 'recorrente' }, { d: 'Tesouro Direto', v: 500, p: 'transferencia', f: 'recorrente' }],
   };
 
   const now = new Date();
@@ -1767,29 +2120,34 @@ function loadDemoData() {
     const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
     const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
 
-    // Receitas
-    data.transactions.push({ id: genId(), date: `${ym}-05`, type: 'receita', description: 'Salário', amount: 5500 + Math.random()*1000, category: 'outros', account: 'Nubank', tags: 'fixo' });
-    if (Math.random() > 0.5) data.transactions.push({ id: genId(), date: `${ym}-15`, type: 'receita', description: 'Freelance', amount: 800 + Math.random()*600, category: 'outros', account: 'Inter', tags: 'extra' });
+    // 🟢 RECEITAS
+    data.transactions.push({ id: genId(), date: `${ym}-05`, type: 'receita', description: 'Pró-labore GC Marketing', amount: 8000 + Math.round(Math.random()*500), category: 'prolabore', payment: 'transferencia', frequency: 'recorrente', account: 'Itaú PJ → PF', tags: 'fixo' });
+    data.transactions.push({ id: genId(), date: `${ym}-05`, type: 'receita', description: 'Salário Líquido', amount: 5500 + Math.round(Math.random()*800), category: 'salario_liq', payment: 'transferencia', frequency: 'recorrente', account: 'Itaú', tags: 'fixo' });
+    data.transactions.push({ id: genId(), date: `${ym}-05`, type: 'receita', description: 'Vale Alimentação', amount: 800, category: 'va_vr', payment: 'transferencia', frequency: 'recorrente', account: 'Alelo', tags: 'benefício' });
+    data.transactions.push({ id: genId(), date: `${ym}-15`, type: 'receita', description: 'Distribuição de Lucros', amount: 3000 + Math.round(Math.random()*2000), category: 'dist_lucros', payment: 'transferencia', frequency: 'pontual', account: 'Itaú PJ → PF', tags: 'variável' });
+    if (Math.random() > 0.4) data.transactions.push({ id: genId(), date: `${ym}-20`, type: 'receita', description: 'Rendimento Estrutura de Opções', amount: 400 + Math.round(Math.random()*800), category: 'rendimentos', payment: 'transferencia', frequency: 'pontual', account: 'XP Investimentos', tags: 'investimento' });
+    if (Math.random() > 0.7) data.transactions.push({ id: genId(), date: `${ym}-25`, type: 'receita', description: 'Consultoria Avulsa', amount: 500 + Math.round(Math.random()*1500), category: 'renda_extra', payment: 'pix', frequency: 'pontual', account: 'Nubank', tags: 'extra' });
 
-    // Despesas
-    Object.entries(descs).forEach(([catId, items]) => {
-      if (catId === 'investimentos' && Math.random() > 0.6) return;
-      const count = catId === 'moradia' ? items.length : Math.ceil(Math.random() * items.length);
-      for (let i = 0; i < count; i++) {
-        const day = String(Math.floor(Math.random()*27)+1).padStart(2,'0');
-        const cat = data.categories.find(c => c.id === catId);
-        const maxBudget = cat?.budget || 500;
-        data.transactions.push({
-          id: genId(),
-          date: `${ym}-${day}`,
-          type: 'despesa',
-          description: items[i % items.length],
-          amount: Math.round((Math.random() * maxBudget * 0.4 + 20) * 100) / 100,
-          category: catId,
-          account: ['Nubank','Inter','Itaú'][Math.floor(Math.random()*3)],
-          tags: '',
-        });
-      }
+    // 🔴 DESPESAS
+    Object.entries(despesas).forEach(([catId, items]) => {
+      items.forEach(item => {
+        if (Math.random() > 0.15) {
+          const day = String(Math.floor(Math.random()*25)+1).padStart(2,'0');
+          const variation = 0.85 + Math.random() * 0.3;
+          data.transactions.push({
+            id: genId(),
+            date: `${ym}-${day}`,
+            type: 'despesa',
+            description: item.d,
+            amount: Math.round(item.v * variation * 100) / 100,
+            category: catId,
+            payment: item.p || 'pix',
+            frequency: item.f || 'pontual',
+            account: ['Nubank','Inter','Itaú'][Math.floor(Math.random()*3)],
+            tags: '',
+          });
+        }
+      });
     });
   }
 
