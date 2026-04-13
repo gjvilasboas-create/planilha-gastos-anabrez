@@ -618,8 +618,31 @@ td.amount.negative { color: #C0392B; }
 .welcome-modal p { color: var(--text-muted); margin-bottom: 24px; font-size: 0.9rem; }
 .welcome-modal .btn { width: 100%; justify-content: center; margin-bottom: 8px; }
 
+/* ======= FAB (Floating Action Button) ======= */
+.fab {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--blue-night);
+  border: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  cursor: pointer;
+  z-index: 90;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.fab:hover { background: var(--gold-dark); color: white; transform: scale(1.05); }
+.fab svg { width: 28px; height: 28px; }
+
 /* ======= MOBILE ======= */
 @media (max-width: 768px) {
+  .fab { display: flex; }
   .nav { display: none; }
   .nav.open {
     display: flex;
@@ -695,6 +718,31 @@ td.amount.negative { color: #C0392B; }
 
 <!-- ===== TAB: DASHBOARD ===== -->
 <div class="tab-content active" id="tab-dashboard">
+
+  <!-- QUICK ACTIONS — Hero Section -->
+  <div id="quickActions" class="card" style="margin-bottom:24px;background:linear-gradient(135deg,var(--blue-night) 0%,var(--blue-med) 100%);color:white;border:none;padding:28px 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div>
+        <h2 style="color:var(--gold);margin-bottom:4px;font-size:1.3rem">O que você quer fazer?</h2>
+        <p style="color:rgba(255,255,255,0.7);font-size:0.88rem">Comece adicionando seus gastos e receitas do mês</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" onclick="openAddModalWithType('despesa')" style="background:var(--gold);color:var(--blue-night);font-weight:700;padding:12px 20px;font-size:0.9rem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px"><path d="M12 5v14M5 12h14"/></svg>
+          Nova Despesa
+        </button>
+        <button class="btn" onclick="openAddModalWithType('receita')" style="background:var(--green-accent);color:white;font-weight:700;padding:12px 20px;font-size:0.9rem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:18px;height:18px"><path d="M12 5v14M5 12h14"/></svg>
+          Nova Receita
+        </button>
+        <button class="btn" onclick="switchTab('importar')" style="background:rgba(255,255,255,0.15);color:white;font-weight:600;padding:12px 20px;font-size:0.9rem;border:1px solid rgba(255,255,255,0.2)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Importar Extrato
+        </button>
+      </div>
+    </div>
+  </div>
+
   <h2 style="margin-bottom:20px;color:var(--blue-night)">Visão Geral</h2>
   <div class="cards-grid" id="dashCards"></div>
   <div class="charts-grid">
@@ -774,7 +822,12 @@ td.amount.negative { color: #C0392B; }
   <div class="empty-state" id="emptyTransactions" style="display:none">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
     <h3>Nenhum lançamento ainda</h3>
-    <p>Comece adicionando sua primeira receita ou despesa, ou importe um extrato bancário.</p>
+    <p style="margin-bottom:16px">Comece adicionando sua primeira receita ou despesa</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="openAddModalWithType('despesa')">+ Nova Despesa</button>
+      <button class="btn btn-secondary" onclick="openAddModalWithType('receita')">+ Nova Receita</button>
+      <button class="btn btn-secondary" onclick="switchTab('importar')">Importar Extrato</button>
+    </div>
   </div>
 </div>
 
@@ -831,8 +884,8 @@ td.amount.negative { color: #C0392B; }
 <div class="tab-content" id="tab-categorias">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
     <div>
-      <h2 style="color:var(--blue-night)">Balanço Patrimonial — Categorias</h2>
-      <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px">Razonete PF: Entradas vs Saídas com limites mensais</p>
+      <h2 style="color:var(--blue-night)">Orçamento Mensal</h2>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px">Defina limites clicando no campo "Limite" de cada categoria. Edite direto na tabela!</p>
     </div>
     <button class="btn btn-primary btn-sm" onclick="openCategoryModal()">+ Nova Categoria</button>
   </div>
@@ -895,6 +948,11 @@ td.amount.negative { color: #C0392B; }
 </div>
 
 </main>
+
+<!-- FAB — Mobile -->
+<button class="fab" onclick="openAddModal()" title="Novo lançamento">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+</button>
 
 <!-- FOOTER -->
 <footer class="footer">
@@ -1062,11 +1120,18 @@ td.amount.negative { color: #C0392B; }
 <div class="modal-overlay welcome-modal" id="modalWelcome">
   <div class="modal">
     <div class="modal-body">
-      <div style="font-size:2.5rem;margin-bottom:12px">✨</div>
+      <div style="font-size:2.5rem;margin-bottom:12px">💰</div>
       <h2>Bem-vinda à sua Planilha de Gastos!</h2>
-      <p>Organize suas finanças de forma simples e elegante. Quer começar com dados de exemplo para explorar?</p>
-      <button class="btn btn-primary" onclick="loadDemoData();closeModal('modalWelcome')">Sim, carregar exemplos</button>
-      <button class="btn btn-secondary" onclick="closeModal('modalWelcome')">Não, começar do zero</button>
+      <p style="margin-bottom:8px">Organize suas finanças de forma simples e prática.</p>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:24px">Escolha como quer começar:</p>
+      <button class="btn btn-primary" onclick="loadDemoData();closeModal('modalWelcome')" style="font-size:0.95rem;padding:14px 24px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg>
+        Ver com dados de exemplo
+      </button>
+      <button class="btn btn-secondary" onclick="closeModal('modalWelcome')" style="font-size:0.95rem;padding:14px 24px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M12 5v14M5 12h14"/></svg>
+        Começar do zero
+      </button>
     </div>
   </div>
 </div>
@@ -1451,10 +1516,14 @@ function renderTransactions() {
 }
 
 function openAddModal() {
-  document.getElementById('modalTransTitle').textContent = 'Novo Lançamento';
+  openAddModalWithType('despesa');
+}
+
+function openAddModalWithType(type) {
+  document.getElementById('modalTransTitle').textContent = type === 'receita' ? 'Nova Receita' : 'Nova Despesa';
   document.getElementById('editId').value = '';
   document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
-  document.getElementById('txType').value = 'despesa';
+  document.getElementById('txType').value = type || 'despesa';
   document.getElementById('txDesc').value = '';
   document.getElementById('txAmount').value = '';
   document.getElementById('txPayment').value = 'pix';
@@ -1765,7 +1834,13 @@ function renderBudget() {
     totalIncome += received;
     return `<div class="budget-row">
       <div class="budget-icon" style="background:${cat.color}20;color:${cat.color}">${cat.icon}</div>
-      <div class="budget-info"><div class="budget-name">${cat.name}</div></div>
+      <div class="budget-info">
+        <div class="budget-name">${cat.name}</div>
+        <div class="budget-detail" style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:0.75rem;color:var(--text-muted)">Esperado:</span>
+          <input type="text" class="inline-budget-input" value="${cat.budget > 0 ? cat.budget.toLocaleString('pt-BR', {minimumFractionDigits:2}) : ''}" placeholder="0,00" onblur="saveBudgetInline('${cat.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" style="width:100px;padding:3px 8px;font-size:0.78rem;border:1.5px solid var(--gray-light);border-radius:6px;font-family:'Open Sans',sans-serif;background:var(--cream-light);transition:var(--transition)" onfocus="this.style.borderColor='var(--gold)';this.style.background='white'" >
+        </div>
+      </div>
       <div class="budget-values"><div class="budget-spent" style="color:var(--green-accent)">${formatBRL(received)}</div></div>
       <div>
         <button class="btn-icon" onclick="editCategory('${cat.id}')" title="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -1813,7 +1888,10 @@ function renderBudget() {
         <div class="budget-icon" style="background:${cat.color}20;color:${cat.color}">${cat.icon}</div>
         <div class="budget-info">
           <div class="budget-name">${cat.name}</div>
-          <div class="budget-detail">${cat.budget > 0 ? `Limite: ${formatBRL(cat.budget)}` : 'Sem limite definido'}</div>
+          <div class="budget-detail" style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:0.75rem;color:var(--text-muted)">Limite:</span>
+            <input type="text" class="inline-budget-input" value="${cat.budget > 0 ? cat.budget.toLocaleString('pt-BR', {minimumFractionDigits:2}) : ''}" placeholder="0,00" onblur="saveBudgetInline('${cat.id}', this.value)" onkeydown="if(event.key==='Enter'){this.blur()}" style="width:100px;padding:3px 8px;font-size:0.78rem;border:1.5px solid var(--gray-light);border-radius:6px;font-family:'Open Sans',sans-serif;background:var(--cream-light);transition:var(--transition)" onfocus="this.style.borderColor='var(--gold)';this.style.background='white'" >
+          </div>
           ${cat.budget > 0 ? `<div class="budget-bar"><div class="progress-bar"><div class="progress-fill ${barClass}" style="width:${Math.min(pct,100)}%"></div></div></div>` : ''}
         </div>
         <div class="budget-values">
@@ -1902,6 +1980,18 @@ function deleteCategory(id) {
   saveData();
   renderBudget();
   toast('Categoria excluída!');
+}
+
+function saveBudgetInline(catId, value) {
+  const cat = data.categories.find(c => c.id === catId);
+  if (!cat) return;
+  const newBudget = parseBRL(value);
+  if (cat.budget === newBudget) return;
+  cat.budget = newBudget;
+  saveData();
+  renderBudget();
+  renderDashboard();
+  if (newBudget > 0) toast(`Limite de ${cat.name} atualizado para ${formatBRL(newBudget)}`);
 }
 
 // ============================================================
