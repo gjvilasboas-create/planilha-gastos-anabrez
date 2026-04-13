@@ -998,7 +998,7 @@ const DEFAULT_CATEGORIES = [
   { id: 'outros', name: 'Outros', icon: '📦', color: '#7A9BB5', budget: 500 },
 ];
 
-let data = {
+var data = {
   transactions: [],
   categories: [...DEFAULT_CATEGORIES],
   savingsGoal: 500,
@@ -1083,7 +1083,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('show'); 
 // ============================================================
 // DASHBOARD
 // ============================================================
-let donutChart, barsChart, lineChart;
+var donutChart, barsChart, lineChart;
 
 function renderDashboard() {
   const month = getCurrentMonth();
@@ -1219,7 +1219,7 @@ function renderTransactions() {
       <td>${formatDate(t.date)}</td>
       <td>${t.description}${inst}${rec}</td>
       <td><span class="badge"><span class="badge-dot" style="background:${cat.color}"></span>${cat.name}</span></td>
-      <td><span style="color:${t.type==='receita'?'var(--blue-med)':'var(--terracota)';};font-weight:600;font-size:0.78rem;text-transform:uppercase">${t.type}</span></td>
+      <td><span style="color:${t.type==='receita'?'var(--blue-med)':'var(--terracota)'};font-weight:600;font-size:0.78rem;text-transform:uppercase">${t.type}</span></td>
       <td class="amount ${t.type==='receita'?'positive':'negative'}">${t.type==='despesa'?'-':'+'} ${formatBRL(t.amount)}</td>
       <td style="font-size:0.8rem;color:var(--text-muted)">${t.account||'-'}</td>
       <td>${tags||'<span style="color:var(--text-muted)">-</span>'}</td>
@@ -1327,28 +1327,29 @@ function exportCSV() {
   toast('CSV exportado!');
 }
 
-// Toggle recurrence/installment fields
-document.getElementById('txRecurrent').addEventListener('change', e => {
-  document.getElementById('txRecurrence').style.display = e.target.checked ? 'block' : 'none';
-});
-document.getElementById('txInstallment').addEventListener('change', e => {
-  document.getElementById('txInstallmentFields').style.display = e.target.checked ? 'grid' : 'none';
-});
+// Toggle recurrence/installment fields (attached after DOM ready)
+function attachEventListeners() {
+  document.getElementById('txRecurrent').addEventListener('change', e => {
+    document.getElementById('txRecurrence').style.display = e.target.checked ? 'block' : 'none';
+  });
+  document.getElementById('txInstallment').addEventListener('change', e => {
+    document.getElementById('txInstallmentFields').style.display = e.target.checked ? 'grid' : 'none';
+  });
+  const dz = document.getElementById('dropzone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  });
+}
 
 // ============================================================
 // IMPORT
 // ============================================================
-let importData = [];
-let importColMap = {};
-
-const dz = document.getElementById('dropzone');
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) processFile(file);
-});
+var importData = [];
+var importColMap = {};
 
 function handleFileUpload(e) { const f = e.target.files[0]; if (f) processFile(f); }
 
@@ -1815,15 +1816,20 @@ function resetAllData() {
 // ============================================================
 function init() {
   const hasData = loadData();
-  if (!hasData) {
-    openModal('modalWelcome');
-  }
+  attachEventListeners();
   document.getElementById('filterMonth').value = getCurrentMonth();
   populateCategorySelects();
   renderDashboard();
+  if (!hasData) {
+    openModal('modalWelcome');
+  }
 }
 
-init();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
