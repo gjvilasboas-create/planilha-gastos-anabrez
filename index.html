@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 :root {
   --terracota: #B8860B;
@@ -834,13 +835,13 @@ td.amount.negative { color: #C0392B; }
 <!-- ===== TAB: IMPORTAR ===== -->
 <div class="tab-content" id="tab-importar">
   <h2 style="color:var(--blue-night);margin-bottom:8px">Importar Extrato</h2>
-  <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px">Importe arquivos CSV, XLS ou XLSX do seu banco</p>
+  <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px">Importe arquivos CSV, XLS, XLSX ou PDF do seu banco</p>
 
   <div class="dropzone" id="dropzone">
-    <input type="file" accept=".csv,.xls,.xlsx" onchange="handleFileUpload(event)">
+    <input type="file" accept=".csv,.xls,.xlsx,.pdf" onchange="handleFileUpload(event)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     <h3>Arraste o arquivo aqui ou clique para selecionar</h3>
-    <p>Formatos aceitos: .CSV, .XLS, .XLSX · Nubank, Inter, Itaú, Bradesco e outros</p>
+    <p>Formatos aceitos: .CSV, .XLS, .XLSX, .PDF · Nubank, Inter, Itaú, Bradesco e outros</p>
   </div>
 
   <div id="importPreview" style="display:none;margin-top:24px">
@@ -872,10 +873,12 @@ td.amount.negative { color: #C0392B; }
   <div class="card" style="margin-top:24px">
     <h3 style="font-size:0.95rem;color:var(--blue-night);margin-bottom:12px">Como exportar do seu banco</h3>
     <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.8">
-      <p><strong style="color:var(--text)">Nubank:</strong> App → Cartão → Fatura → ··· → Exportar (CSV)</p>
-      <p><strong style="color:var(--text)">Inter:</strong> App → Cartão → Fatura → Exportar → CSV</p>
-      <p><strong style="color:var(--text)">Itaú:</strong> Internet Banking → Cartão → Fatura → Exportar</p>
-      <p><strong style="color:var(--text)">Bradesco:</strong> Internet Banking → Conta → Extrato → Salvar como CSV</p>
+      <p><strong style="color:var(--text)">Nubank:</strong> App → Cartão → Fatura → ··· → Exportar (CSV ou PDF)</p>
+      <p><strong style="color:var(--text)">Inter:</strong> App → Cartão → Fatura → Exportar → CSV ou PDF</p>
+      <p><strong style="color:var(--text)">Itaú:</strong> Internet Banking → Cartão → Fatura → Exportar (PDF ou CSV)</p>
+      <p><strong style="color:var(--text)">Bradesco:</strong> Internet Banking → Conta → Extrato → Salvar como CSV ou PDF</p>
+      <p><strong style="color:var(--text)">C6 / BTG / XP:</strong> App → Extrato → Exportar PDF</p>
+      <p style="margin-top:8px;font-size:0.78rem;color:var(--gold-dark)">💡 PDFs de fatura/extrato bancário são lidos automaticamente. Para melhor resultado, prefira CSV quando disponível.</p>
     </div>
   </div>
 </div>
@@ -1664,9 +1667,82 @@ function processFile(file) {
       showImportPreview(rows, file.name);
     };
     reader.readAsArrayBuffer(file);
+  } else if (ext === 'pdf') {
+    processPDF(file);
   } else {
-    toast('Formato não suportado. Use .CSV, .XLS ou .XLSX', 'error');
+    toast('Formato não suportado. Use .CSV, .XLS, .XLSX ou .PDF', 'error');
   }
+}
+
+async function processPDF(file) {
+  try {
+    toast('Lendo PDF, aguarde...');
+    const arrayBuffer = await file.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let allText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const strings = content.items.map(item => item.str);
+      allText += strings.join(' ') + '\n';
+    }
+    const rows = parsePDFText(allText);
+    if (rows.length < 2) {
+      toast('Não foi possível extrair dados do PDF. Tente exportar como CSV no seu banco.', 'error');
+      return;
+    }
+    showImportPreview(rows, file.name);
+  } catch (err) {
+    console.error('PDF error:', err);
+    toast('Erro ao ler o PDF. Verifique se o arquivo não está protegido.', 'error');
+  }
+}
+
+function parsePDFText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  const rows = [];
+  // Common date patterns in Brazilian bank statements
+  const dateRegex = /(\d{2}\/\d{2}\/\d{4}|\d{2}\/\d{2}\/\d{2}|\d{2}\.\d{2}\.\d{4}|\d{4}-\d{2}-\d{2})/;
+  const moneyRegex = /(-?\s*R?\$?\s*[\d.,]+[\d]{2})\b/;
+
+  // Detect if there's a table-like structure
+  let foundRows = [];
+  for (const line of lines) {
+    const dateMatch = line.match(dateRegex);
+    const moneyMatches = line.match(new RegExp(moneyRegex.source, 'g'));
+    if (dateMatch && moneyMatches && moneyMatches.length >= 1) {
+      // Extract: date, description (middle part), amount (last money value)
+      const date = dateMatch[1];
+      const amount = moneyMatches[moneyMatches.length - 1];
+      // Description is everything between date and last amount
+      let desc = line;
+      desc = desc.replace(dateMatch[0], '').trim();
+      // Remove all money values from end
+      for (const m of moneyMatches) desc = desc.replace(m, '').trim();
+      // Clean up extra spaces and symbols
+      desc = desc.replace(/^\s*[-–|]\s*/, '').replace(/\s+/g, ' ').trim();
+      if (desc.length > 1) {
+        foundRows.push([date, desc, amount]);
+      }
+    }
+  }
+
+  if (foundRows.length > 0) {
+    rows.push(['Data', 'Descrição', 'Valor']);
+    foundRows.forEach(r => rows.push(r));
+  } else {
+    // Fallback: try to split lines by multiple spaces/tabs as columns
+    const tabRows = lines.map(l => l.split(/\s{2,}|\t/).filter(c => c.trim()));
+    const maxCols = Math.max(...tabRows.map(r => r.length));
+    if (maxCols >= 2) {
+      tabRows.forEach(r => {
+        while (r.length < maxCols) r.push('');
+        rows.push(r);
+      });
+    }
+  }
+  return rows;
 }
 
 function showImportPreview(rows, fileName) {
