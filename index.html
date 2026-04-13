@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RIQZ — Gestão Financeira</title>
+<title>Planilha de Gastos — Ana Brez</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -50,7 +50,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 600; }
+h1, h2, h3, h4 { font-family: 'Open Sans', sans-serif; font-weight: 700; }
 
 /* ======= HEADER ======= */
 .header {
@@ -81,10 +81,10 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 600; }
   letter-spacing: -0.02em;
 }
 .logo span {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 0.8rem;
   color: var(--gold-light);
-  font-style: italic;
+  font-weight: 400;
 }
 
 /* ======= NAV ======= */
@@ -161,7 +161,7 @@ h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 600; }
   margin-bottom: 8px;
 }
 .card-value {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Open Sans', sans-serif;
   font-size: 1.75rem;
   font-weight: 700;
   line-height: 1.2;
@@ -582,7 +582,7 @@ td.amount.negative { color: #C0392B; }
   padding: 12px;
   text-align: center;
 }
-.import-summary-card .value { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; }
+.import-summary-card .value { font-family: 'Open Sans', sans-serif; font-size: 1.4rem; font-weight: 700; }
 .import-summary-card .label { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
 
 /* ======= GOAL CARD ======= */
@@ -659,8 +659,8 @@ td.amount.negative { color: #C0392B; }
 <header class="header">
   <div class="header-inner">
     <div class="logo">
-      <h1>RIQZ</h1>
-      <span>Gestão Financeira</span>
+      <h1>Planilha de Gastos</h1>
+      <span>Ana Brez</span>
     </div>
     <button class="hamburger" onclick="document.querySelector('.nav').classList.toggle('open')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
@@ -898,7 +898,7 @@ td.amount.negative { color: #C0392B; }
 
 <!-- FOOTER -->
 <footer class="footer">
-  <p><strong>RIQZ</strong> — Gestão Financeira · Seus dados ficam salvos localmente no navegador</p>
+  <p>Planilha de Gastos — <strong>Ana Brez</strong> · Seus dados ficam salvos localmente no navegador</p>
   <button class="reset-btn" onclick="resetAllData()">Resetar todos os dados</button>
 </footer>
 
@@ -1063,8 +1063,8 @@ td.amount.negative { color: #C0392B; }
   <div class="modal">
     <div class="modal-body">
       <div style="font-size:2.5rem;margin-bottom:12px">✨</div>
-      <h2>Bem-vindo ao RIQZ!</h2>
-      <p>Gerencie suas finanças pessoais com inteligência. Quer começar com dados de exemplo para explorar?</p>
+      <h2>Bem-vinda à sua Planilha de Gastos!</h2>
+      <p>Organize suas finanças de forma simples e elegante. Quer começar com dados de exemplo para explorar?</p>
       <button class="btn btn-primary" onclick="loadDemoData();closeModal('modalWelcome')">Sim, carregar exemplos</button>
       <button class="btn btn-secondary" onclick="closeModal('modalWelcome')">Não, começar do zero</button>
     </div>
