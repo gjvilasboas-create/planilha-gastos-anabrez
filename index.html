@@ -778,6 +778,17 @@ td.amount.negative { color: #C0392B; }
     </div>
   </div>
 
+  <!-- Cartão Parcelado -->
+  <div id="dashInstallmentsWrap" style="margin-top:16px;display:none">
+    <div class="card" style="border-left:4px solid var(--gold)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h3 style="font-size:1rem;color:var(--blue-night)">💳 Parcelas no Cartão</h3>
+        <span id="dashInstTotal" style="font-size:0.85rem;font-weight:700;color:#C0392B"></span>
+      </div>
+      <div id="dashInstallments"></div>
+    </div>
+  </div>
+
   <div style="margin-top:16px">
     <div class="table-card">
       <div class="table-header"><h3>Últimos Lançamentos</h3></div>
@@ -1044,11 +1055,20 @@ td.amount.negative { color: #C0392B; }
         </div>
         <div class="form-group">
           <label style="display:flex;align-items:center;gap:6px;font-size:0.82rem;cursor:pointer">
-            <input type="checkbox" id="txInstallment"> Parcelado
+            <input type="checkbox" id="txInstallment"> Parcelado no cartão
           </label>
-          <div style="display:none;margin-top:6px;gap:8px" id="txInstallmentFields" class="form-row">
-            <input type="number" class="form-input" id="txInstTotal" placeholder="Total parcelas" min="2">
-            <input type="number" class="form-input" id="txInstCurrent" placeholder="Parcela atual" min="1">
+          <div style="display:none;margin-top:6px;gap:8px" id="txInstallmentFields">
+            <div class="form-row" style="gap:8px">
+              <div>
+                <label class="form-label" style="font-size:0.7rem">Nº de Parcelas</label>
+                <input type="number" class="form-input" id="txInstTotal" placeholder="Ex: 12" min="2" oninput="calcInstallmentPreview()">
+              </div>
+              <div>
+                <label class="form-label" style="font-size:0.7rem">Parcela atual</label>
+                <input type="number" class="form-input" id="txInstCurrent" placeholder="1" min="1" value="1" oninput="calcInstallmentPreview()">
+              </div>
+            </div>
+            <div id="installmentPreview" style="margin-top:6px;padding:8px 10px;background:var(--cream-light);border-radius:6px;font-size:0.78rem;color:var(--text-muted);display:none"></div>
           </div>
         </div>
       </div>
@@ -1456,15 +1476,95 @@ function renderDashboard() {
     </div>
   ` : '<p style="color:var(--text-muted);font-size:0.85rem">Sem dados</p>';
 
+  // Installments — parcelas no cartão
+  renderInstallmentsCard();
+
   // Recent
   const recent = [...data.transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   document.getElementById('dashRecent').innerHTML = recent.length ? recent.map(t => `
     <tr>
       <td>${formatDate(t.date)}</td>
-      <td>${t.description}</td>
+      <td>${t.description}${t.installmentTotal ? ` <span style="color:var(--gold-dark);font-size:0.75rem;font-weight:600">${t.installmentCurrent}/${t.installmentTotal}x</span>` : ''}</td>
       <td class="amount ${t.type === 'receita' ? 'positive' : 'negative'}">${t.type === 'despesa' ? '-' : '+'}${formatBRL(t.amount)}</td>
     </tr>
   `).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--text-muted);padding:24px">Nenhum lançamento</td></tr>';
+}
+
+function renderInstallmentsCard() {
+  const allInstallments = data.transactions.filter(t => t.installmentTotal && t.installmentTotal >= 2);
+  const wrap = document.getElementById('dashInstallmentsWrap');
+  if (allInstallments.length === 0) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  // Group by description (installment group) and find unique items
+  const groups = {};
+  allInstallments.forEach(t => {
+    const key = t.installmentGroupId || t.description;
+    if (!groups[key]) groups[key] = { description: t.description, amount: t.amount, total: t.installmentTotal, items: [], category: t.category };
+    groups[key].items.push(t);
+  });
+
+  // Build month-by-month future view (current + next 6 months)
+  const now = new Date();
+  const futureMonths = [];
+  for (let i = 0; i <= 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    futureMonths.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+  }
+
+  // Active installment items — group by description, show progress + future impact
+  let html = '';
+  let totalFutureCommitment = 0;
+
+  Object.values(groups).forEach(g => {
+    const sortedItems = g.items.sort((a, b) => a.installmentCurrent - b.installmentCurrent);
+    const lastPaid = sortedItems.filter(t => t.date <= new Date().toISOString().split('T')[0]).sort((a, b) => b.installmentCurrent - a.installmentCurrent)[0];
+    const currentNum = lastPaid ? lastPaid.installmentCurrent : 0;
+    const remaining = g.total - currentNum;
+    const cat = getCatById(g.category);
+    const pct = (currentNum / g.total) * 100;
+    const futureTotal = remaining * g.amount;
+    totalFutureCommitment += futureTotal;
+
+    // Future months breakdown
+    const futureItems = sortedItems.filter(t => t.installmentCurrent > currentNum).slice(0, 6);
+    const futureMonthsHtml = futureItems.map(t => {
+      const d = new Date(t.date);
+      const mLabel = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.','');
+      return `<span style="display:inline-flex;align-items:center;gap:2px;padding:2px 8px;background:var(--cream);border-radius:10px;font-size:0.7rem;font-weight:500;color:var(--blue-night);margin:2px">${mLabel} <strong>${formatBRL(t.amount)}</strong></span>`;
+    }).join('');
+
+    html += `
+    <div style="padding:12px 0;border-bottom:1px solid var(--gray-light)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:1.1rem">${cat.icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong style="font-size:0.88rem">${g.description}</strong>
+            <span style="font-size:0.82rem;font-weight:700;color:var(--gold-dark)">${formatBRL(g.amount)}/mês</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px">
+            <span style="font-size:0.75rem;color:var(--text-muted)">${cat.name}</span>
+            <span style="font-size:0.75rem;font-weight:600;color:${remaining<=2?'var(--green-accent)':'#C0392B'}">${currentNum}/${g.total} pagas · restam ${remaining}</span>
+          </div>
+        </div>
+      </div>
+      <div class="progress-bar" style="height:6px;margin-bottom:6px"><div class="progress-fill green" style="width:${pct}%;background:${pct>=80?'var(--green-accent)':'var(--gold)'};height:6px"></div></div>
+      ${remaining > 0 ? `<div style="display:flex;flex-wrap:wrap;gap:0;align-items:center">
+        <span style="font-size:0.7rem;color:var(--text-muted);margin-right:4px">Próximas:</span>${futureMonthsHtml}
+        ${remaining > 6 ? `<span style="font-size:0.68rem;color:var(--text-muted);margin-left:4px">+${remaining-6} mais</span>` : ''}
+      </div>` : '<div style="font-size:0.78rem;color:var(--green-accent);font-weight:600">✅ Quitado!</div>'}
+    </div>`;
+  });
+
+  // Totalizador
+  html += `<div style="padding:12px 0;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:0.88rem;font-weight:700;color:var(--blue-night)">Comprometido futuro total</span>
+    <span style="font-size:1rem;font-weight:700;color:#C0392B">${formatBRL(totalFutureCommitment)}</span>
+  </div>`;
+
+  document.getElementById('dashInstallments').innerHTML = html;
+  document.getElementById('dashInstTotal').textContent = `${Object.keys(groups).length} parcelamento(s) ativos`;
 }
 
 // ============================================================
@@ -1499,8 +1599,8 @@ function renderTransactions() {
   body.innerHTML = txs.map(t => {
     const cat = getCatById(t.category);
     const tags = (t.tags || '').split(',').filter(Boolean).map(tag => `<span class="tag">${tag.trim()}</span>`).join('');
-    const inst = t.installmentTotal ? ` (${t.installmentCurrent}/${t.installmentTotal})` : '';
-    const rec = t.recurrent ? ' 🔄' : '';
+    const inst = t.installmentTotal ? ` <span style="display:inline-flex;align-items:center;gap:2px;padding:1px 7px;background:var(--cream);border-radius:10px;font-size:0.7rem;font-weight:700;color:var(--gold-dark)">💳 ${t.installmentCurrent}/${t.installmentTotal}x</span>` : '';
+    const rec = t.recurrent ? ' <span style="font-size:0.72rem;color:var(--gold-dark)">🔄</span>' : '';
     return `<tr>
       <td>${formatDate(t.date)}</td>
       <td>${t.description}${inst}${rec}</td>
@@ -1560,10 +1660,11 @@ function editTransaction(id) {
   document.getElementById('txRecurrence').style.display = t.recurrent ? 'block' : 'none';
   if (t.recurrent) document.getElementById('txRecurrence').value = t.recurrence || 'mensal';
   document.getElementById('txInstallment').checked = !!t.installmentTotal;
-  document.getElementById('txInstallmentFields').style.display = t.installmentTotal ? 'grid' : 'none';
+  document.getElementById('txInstallmentFields').style.display = t.installmentTotal ? 'block' : 'none';
   if (t.installmentTotal) {
     document.getElementById('txInstTotal').value = t.installmentTotal;
     document.getElementById('txInstCurrent').value = t.installmentCurrent;
+    calcInstallmentPreview();
   }
   populateCategorySelects();
   openModal('modalTransaction');
@@ -1593,11 +1694,43 @@ function saveTransaction() {
     if (idx !== -1) data.transactions[idx] = t;
   } else {
     data.transactions.push(t);
+    // Auto-gerar parcelas futuras
+    if (t.installmentTotal >= 2 && t.installmentCurrent < t.installmentTotal) {
+      const baseDate = new Date(t.date + 'T12:00:00');
+      const remaining = t.installmentTotal - t.installmentCurrent;
+      for (let i = 1; i <= remaining; i++) {
+        const futureDate = new Date(baseDate);
+        futureDate.setMonth(futureDate.getMonth() + i);
+        const fDateStr = `${futureDate.getFullYear()}-${String(futureDate.getMonth()+1).padStart(2,'0')}-${String(futureDate.getDate()).padStart(2,'0')}`;
+        data.transactions.push({
+          id: genId(),
+          date: fDateStr,
+          type: t.type,
+          description: t.description,
+          amount: t.amount,
+          category: t.category,
+          payment: 'credito_parcelado',
+          frequency: 'pontual',
+          account: t.account,
+          tags: t.tags,
+          recurrent: false,
+          recurrence: '',
+          installmentTotal: t.installmentTotal,
+          installmentCurrent: t.installmentCurrent + i,
+          installmentGroupId: t.id,
+        });
+      }
+      t.installmentGroupId = t.id;
+      toast(`Lançamento salvo! + ${remaining} parcelas futuras criadas automaticamente`);
+    } else {
+      toast('Lançamento salvo!');
+    }
   }
   saveData();
   closeModal('modalTransaction');
   renderTransactions();
-  toast(id ? 'Lançamento atualizado!' : 'Lançamento salvo!');
+  renderDashboard();
+  if (id) toast('Lançamento atualizado!');
 }
 
 function deleteTransaction(id) {
@@ -1624,13 +1757,45 @@ function exportCSV() {
   toast('CSV exportado!');
 }
 
+function calcInstallmentPreview() {
+  const preview = document.getElementById('installmentPreview');
+  const amount = parseBRL(document.getElementById('txAmount').value);
+  const total = parseInt(document.getElementById('txInstTotal').value) || 0;
+  const current = parseInt(document.getElementById('txInstCurrent').value) || 1;
+  if (amount > 0 && total >= 2) {
+    const remaining = total - current;
+    const perMonth = amount;
+    const totalValue = perMonth * total;
+    preview.style.display = 'block';
+    preview.innerHTML = `
+      <div style="color:var(--blue-night);font-weight:600;margin-bottom:4px">💳 Resumo do Parcelamento</div>
+      <div>Valor da parcela: <strong>${formatBRL(perMonth)}</strong></div>
+      <div>Total: <strong>${formatBRL(totalValue)}</strong> em ${total}x</div>
+      <div>Parcela atual: ${current}/${total} — restam <strong>${remaining} parcelas</strong> (${formatBRL(perMonth * remaining)})</div>
+      ${remaining > 0 ? `<div style="margin-top:4px;color:var(--gold-dark)">⚡ As ${remaining} parcelas futuras serão lançadas automaticamente nos próximos meses</div>` : ''}
+    `;
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
 // Toggle recurrence/installment fields (attached after DOM ready)
 function attachEventListeners() {
   document.getElementById('txRecurrent').addEventListener('change', e => {
     document.getElementById('txRecurrence').style.display = e.target.checked ? 'block' : 'none';
   });
   document.getElementById('txInstallment').addEventListener('change', e => {
-    document.getElementById('txInstallmentFields').style.display = e.target.checked ? 'grid' : 'none';
+    document.getElementById('txInstallmentFields').style.display = e.target.checked ? 'block' : 'none';
+    if (e.target.checked) {
+      document.getElementById('txPayment').value = 'credito_parcelado';
+      document.getElementById('txInstCurrent').value = '1';
+      calcInstallmentPreview();
+    } else {
+      document.getElementById('installmentPreview').style.display = 'none';
+    }
+  });
+  document.getElementById('txAmount').addEventListener('input', () => {
+    if (document.getElementById('txInstallment').checked) calcInstallmentPreview();
   });
   const dz = document.getElementById('dropzone');
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
@@ -2322,6 +2487,28 @@ function loadDemoData() {
       });
     });
   }
+
+  // Parcelamentos de exemplo
+  const installments = [
+    { desc: 'iPhone 15 Pro Max', cat: 'compras_geral', amount: 749.17, total: 12, startMonthsAgo: 4, account: 'Nubank' },
+    { desc: 'Sofá Novo Tokstok', cat: 'itens_casa', amount: 416.50, total: 6, startMonthsAgo: 2, account: 'Inter' },
+    { desc: 'Pneus Michelin', cat: 'manut_auto', amount: 312.50, total: 4, startMonthsAgo: 1, account: 'Itaú' },
+  ];
+  installments.forEach(inst => {
+    const groupId = genId();
+    for (let p = 1; p <= inst.total; p++) {
+      const monthOffset = p - 1 - inst.startMonthsAgo;
+      const d = new Date(now.getFullYear(), now.getMonth() + monthOffset, 15);
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-15`;
+      data.transactions.push({
+        id: genId(), date: dateStr, type: 'despesa', description: inst.desc,
+        amount: inst.amount, category: inst.cat, payment: 'credito_parcelado',
+        frequency: 'pontual', account: inst.account, tags: 'parcelado',
+        recurrent: false, recurrence: '',
+        installmentTotal: inst.total, installmentCurrent: p, installmentGroupId: groupId,
+      });
+    }
+  });
 
   saveData();
   renderDashboard();
