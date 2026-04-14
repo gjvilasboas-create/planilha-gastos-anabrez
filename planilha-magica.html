@@ -318,22 +318,51 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
 
 /* ======= ONBOARDING ======= */
 .onboarding-overlay{
-  position:fixed;inset:0;background:rgba(13,27,42,0.88);z-index:200;
+  position:fixed;inset:0;background:rgba(13,27,42,0.92);z-index:200;
   display:flex;align-items:center;justify-content:center;animation:fadeIn 0.3s ease;
 }
 @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
 .onboarding-card{
-  background:var(--white);border-radius:var(--radius);padding:36px;
-  max-width:460px;width:90%;text-align:center;box-shadow:var(--shadow-lg);
+  background:var(--white);border-radius:var(--radius);padding:40px 36px;
+  max-width:520px;width:92%;text-align:center;box-shadow:var(--shadow-lg);
   animation:scaleIn 0.3s ease;
 }
 @keyframes scaleIn{from{transform:scale(0.9);opacity:0;}to{transform:scale(1);opacity:1;}}
-.onboarding-card .ob-icon{font-size:2.5rem;margin-bottom:12px;}
-.onboarding-card h2{font-size:1.25rem;color:var(--navy);margin-bottom:8px;}
-.onboarding-card p{font-size:0.85rem;color:var(--text-muted);margin-bottom:20px;line-height:1.5;}
-.onboarding-steps{display:flex;justify-content:center;gap:6px;margin-bottom:20px;}
-.onboarding-steps .step{width:7px;height:7px;border-radius:50%;background:var(--gray);transition:all var(--transition);}
-.onboarding-steps .step.active{background:var(--gold);width:20px;border-radius:4px;}
+.onboarding-card .ob-icon{font-size:2.8rem;margin-bottom:14px;}
+.onboarding-card h2{font-size:1.3rem;color:var(--navy);margin-bottom:8px;}
+.onboarding-card p{font-size:0.85rem;color:var(--text-muted);margin-bottom:20px;line-height:1.6;}
+.onboarding-card .ob-options{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+.onboarding-card .ob-option{
+  display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:var(--radius-sm);
+  cursor:pointer;transition:all var(--transition);text-align:left;border:2px solid var(--gray);
+}
+.onboarding-card .ob-option:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(201,168,76,0.15);transform:translateY(-1px);}
+.onboarding-card .ob-option .ob-opt-icon{font-size:1.5rem;flex-shrink:0;}
+.onboarding-card .ob-option .ob-opt-text h3{font-size:0.9rem;color:var(--navy);margin-bottom:2px;}
+.onboarding-card .ob-option .ob-opt-text span{font-size:0.75rem;color:var(--text-muted);}
+.onboarding-card .ob-option.highlight{border-color:var(--gold);background:var(--gold-bg);}
+
+/* ======= CHECKLIST ======= */
+.checklist{margin-bottom:16px;}
+.checklist-item{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:var(--white);border-radius:var(--radius-sm);margin-bottom:6px;
+  box-shadow:var(--shadow);cursor:pointer;transition:all var(--transition);
+  border-left:3px solid var(--gray);
+}
+.checklist-item:hover{box-shadow:var(--shadow-lg);transform:translateX(2px);}
+.checklist-item.done{border-left-color:var(--green);opacity:0.7;}
+.checklist-item.pending{border-left-color:var(--gold);}
+.checklist-item .ci-check{
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;flex-shrink:0;
+}
+.checklist-item.done .ci-check{background:var(--green);color:white;}
+.checklist-item.pending .ci-check{background:var(--gray);color:var(--text-muted);}
+.checklist-item .ci-text{flex:1;}
+.checklist-item .ci-text strong{font-size:0.82rem;color:var(--navy);display:block;}
+.checklist-item .ci-text span{font-size:0.7rem;color:var(--text-muted);}
+.checklist-item .ci-arrow{color:var(--gold);font-size:0.9rem;}
 
 /* ======= MOBILE ======= */
 @media(max-width:768px){
@@ -413,11 +442,13 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
 
     <!-- ═══════ DASHBOARD ═══════ -->
     <div class="section active" id="sec-dashboard">
+      <div id="demoBanner"></div>
       <div class="section-header">
         <h2>📊 Dashboard Financeiro</h2>
         <p>Visão geral completa — <strong id="dashName">Preencha seu perfil</strong></p>
       </div>
       <div id="dashCompletion"></div>
+      <div id="dashChecklist"></div>
       <div class="grid-4" id="dashMetrics"></div>
 
       <!-- PROJEÇÃO: 4 cenários -->
@@ -1156,6 +1187,19 @@ function renderDashboard(){
   const proj=projectScenarios(),ai=Math.max(0,Math.min(39,c.anos-1));
   el('dashName').textContent=p.nome||'Preencha seu perfil';
 
+  // Demo banner
+  if(D.isDemo){
+    el('demoBanner').innerHTML=`<div class="alert-banner info" style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+      <span>📊 Você está vendo <strong>dados de exemplo</strong> (Maria Silva, 28 anos). Quer trocar pelos seus?</span>
+      <button class="btn btn-gold btn-sm" onclick="clearAndStartFresh()">Preencher meus dados →</button>
+    </div>`;
+  }else{
+    el('demoBanner').innerHTML='';
+  }
+
+  // Checklist
+  renderChecklist();
+
   // Completion
   const comp=getCompletion();
   el('dashCompletion').innerHTML=`<div class="completion-bar">
@@ -1388,35 +1432,101 @@ function checkAchievements(){
 }
 
 // ═══════════════════════════════════════════════
+// DEMO DATA
+// ═══════════════════════════════════════════════
+function loadDemoData(){
+  D.perfil={nome:'Maria Silva',idade:28,aposent:55,perfil:'Moderado',renda:6500,investido:25000,aporte:1200,rendaPassiva:10000,ipca:7.17,cdi:11.46};
+  D.pizza={fixas:3200,estilo:1500,invest:1200};
+  D.gastos={moradia:[1800,1800,1800],mercado:[750,680,720],alimentFora:[350,280,400],transporte:[250,250,250],saude:[150,200,100],educacao:[200,200,200],assinaturas:[180,180,180],lazer:[200,300,250],presentes:[100,0,150]};
+  D.termometro={reserva:'Sim',cdi:'Sim',metasDef:'Sim',dividas:'Não'};
+  D.metas=[
+    {nome:'Reserva de Emergência',valor:40000,tem:25000,prazo:12},
+    {nome:'Viagem Europa',valor:20000,tem:5000,prazo:36},
+    {nome:'Entrada Apartamento',valor:100000,tem:15000,prazo:60},
+    {nome:'Curso MBA',valor:30000,tem:8000,prazo:36}
+  ];
+  D.hierarquia={items:['Liberdade Financeira','Saúde','Família','Educação','Moradia','Viagem','Alimentação','Lazer e Diversão','Vestuário','Outros'],reflexoes:['Quero ter liberdade para escolher como viver sem depender de salário.','Gasto muito com delivery e roupas que não uso.']};
+  D.firstVisit=false;
+  D.isDemo=true;
+  saveData();populateInputs();renderHierarquia();recalcAll();lastScore=calcScore();
+  toast('Dados de exemplo carregados! Explore tudo.','success');
+}
+
+function clearAndStartFresh(){
+  D=JSON.parse(JSON.stringify(DEFAULT_DATA));
+  D.firstVisit=false;
+  saveData();populateInputs();renderHierarquia();recalcAll();lastScore=calcScore();
+  goTo('perfil');
+  toast('Comece preenchendo seus dados!','info');
+}
+
+// ═══════════════════════════════════════════════
 // ONBOARDING
 // ═══════════════════════════════════════════════
 function showOnboarding(){
   if(!D.firstVisit)return;
-  const steps=[
-    {icon:'✨',title:'Bem-vindo à Planilha Mágica!',text:'Sua ferramenta interativa de planejamento financeiro. Vamos configurar tudo em poucos minutos.'},
-    {icon:'👤',title:'Comece pelo Perfil',text:'Preencha seus dados pessoais e financeiros. Todos os cálculos dependem dessas informações.'},
-    {icon:'🚀',title:'Explore as 9 Abas',text:'Dashboard, Pizza Financeira, Projeções, Metas e mais. Cada aba revela algo novo sobre seu futuro financeiro.'},
-  ];
-  let step=0;
   const overlay=document.createElement('div');overlay.className='onboarding-overlay';
-  function render(){
-    const s=steps[step];
-    overlay.innerHTML=`<div class="onboarding-card">
-      <div class="ob-icon">${s.icon}</div><h2>${s.title}</h2><p>${s.text}</p>
-      <div class="onboarding-steps">${steps.map((_,i)=>`<div class="step ${i===step?'active':''}"></div>`).join('')}</div>
-      <div style="display:flex;gap:8px;justify-content:center">
-        ${step>0?'<button class="btn btn-outline" id="obPrev">Voltar</button>':''}
-        <button class="btn btn-gold" id="obNext">${step===steps.length-1?'Começar! 🚀':'Próximo →'}</button>
+  overlay.innerHTML=`<div class="onboarding-card">
+    <div class="ob-icon">✨</div>
+    <h2>Bem-vindo à Planilha Mágica!</h2>
+    <p>Sua ferramenta interativa de planejamento financeiro.<br>Como quer começar?</p>
+    <div class="ob-options">
+      <div class="ob-option highlight" id="obDemo">
+        <div class="ob-opt-icon">📊</div>
+        <div class="ob-opt-text">
+          <h3>Ver exemplo preenchido</h3>
+          <span>Veja como funciona com dados realistas de uma pessoa. Depois você troca pelos seus.</span>
+        </div>
       </div>
-    </div>`;
-    setTimeout(()=>{
-      const next=document.getElementById('obNext');
-      const prev=document.getElementById('obPrev');
-      if(next)next.onclick=()=>{step++;if(step>=steps.length){D.firstVisit=false;saveData();overlay.remove();goTo('perfil');return;}render();};
-      if(prev)prev.onclick=()=>{step=Math.max(0,step-1);render();};
-    },50);
+      <div class="ob-option" id="obFresh">
+        <div class="ob-opt-icon">✏️</div>
+        <div class="ob-opt-text">
+          <h3>Preencher meus dados</h3>
+          <span>Comece do zero com seus dados reais. Leva menos de 5 minutos.</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(()=>{
+    document.getElementById('obDemo').onclick=()=>{overlay.remove();loadDemoData();goTo('dashboard');};
+    document.getElementById('obFresh').onclick=()=>{overlay.remove();clearAndStartFresh();};
+  },50);
+}
+
+// ═══════════════════════════════════════════════
+// CHECKLIST (what to fill)
+// ═══════════════════════════════════════════════
+function renderChecklist(){
+  const steps=[
+    {id:'perfil',label:'Preencher Perfil',desc:'Nome, idade, renda e aporte mensal',done:!!D.perfil.nome,section:'perfil'},
+    {id:'pizza',label:'Pizza Financeira',desc:'Divida seus gastos em 50/25/25',done:!!(D.pizza.fixas||D.pizza.estilo||D.pizza.invest),section:'pizza'},
+    {id:'gastos',label:'Controle de Gastos',desc:'3 meses de gastos por categoria',done:Object.values(D.gastos).some(v=>v&&v.some(x=>x>0)),section:'gastos'},
+    {id:'term',label:'Termômetro Financeiro',desc:'Responda 4 perguntas e descubra sua nota',done:D.termometro.reserva!==null,section:'termometro'},
+    {id:'metas',label:'Definir Metas SMART',desc:'Crie pelo menos uma meta com valor e prazo',done:D.metas.length>0,section:'metas'},
+    {id:'hier',label:'Hierarquia de Valor',desc:'Ordene suas prioridades e reflita',done:!!(D.hierarquia.reflexoes[0]),section:'hierarquia'},
+  ];
+  const allDone=steps.every(s=>s.done);
+  const pending=steps.filter(s=>!s.done);
+  if(allDone){
+    el('dashChecklist').innerHTML='';
+    return;
   }
-  render();document.body.appendChild(overlay);
+  let html='<div class="card" style="border:2px solid var(--gold);background:linear-gradient(135deg,var(--gold-bg),var(--white))"><div class="card-title" style="color:var(--gold-dark)">📋 Complete seu planejamento — faltam '+pending.length+' passos</div><div class="checklist">';
+  steps.forEach(s=>{
+    html+=`<div class="checklist-item ${s.done?'done':'pending'}" onclick="goTo('${s.section}')">
+      <div class="ci-check">${s.done?'✓':s.done?'':'•'}</div>
+      <div class="ci-text"><strong>${s.label}</strong><span>${s.desc}</span></div>
+      ${s.done?'':'<div class="ci-arrow">→</div>'}
+    </div>`;
+  });
+  html+='</div>';
+  // Add "load demo" link if mostly empty
+  if(pending.length>=4){
+    html+='<div style="text-align:center;padding:4px 0 8px"><button class="btn btn-sm btn-outline" onclick="loadDemoData();goTo(\'dashboard\')">Ou veja com dados de exemplo →</button></div>';
+  }
+  html+='</div>';
+  el('dashChecklist').innerHTML=html;
 }
 
 // ═══════════════════════════════════════════════
