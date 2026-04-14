@@ -450,12 +450,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
       <div id="dashChecklist"></div>
       <div class="grid-4" id="dashMetrics"></div>
 
-      <!-- RESUMO: MINHA VIDA NUMA TELA -->
-      <div class="card" style="margin-top:4px;border:2px solid var(--navy);background:linear-gradient(135deg,var(--white),var(--gray-light))">
-        <div class="card-title" style="color:var(--navy);font-size:0.82rem">📋 Sua Vida Financeira Numa Tela</div>
-        <div id="dashLifeSummary"></div>
-      </div>
-
       <!-- NÚMERO FIRE + QUANTO FALTA -->
       <div class="grid-2" style="margin-top:4px">
         <div class="card" id="dashFireCard" style="text-align:center"></div>
@@ -478,42 +472,12 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
         <div style="height:260px"><canvas id="dashProjChart"></canvas></div>
       </div>
 
-      <!-- PROJEÇÃO: 4 cenários -->
-      <div class="card" style="margin-top:4px">
-        <div class="card-title">Projeção na Aposentadoria — 4 Cenários</div>
-        <div class="grid-4" id="dashScenarios" style="gap:10px"></div>
-      </div>
-
-      <!-- CUSTO DE INVESTIR MAL -->
-      <div class="custo-mal" id="dashCustoMal">
-        <div class="cm-icon">💸</div>
-        <div class="cm-text">
-          <div class="cm-label">Custo de investir mal (Poupança vs Arrojado)</div>
-          <div class="cm-value" id="dashCustoValue">R$ 0</div>
-          <div class="cm-sub">Dinheiro que você perde ficando na poupança</div>
-        </div>
-      </div>
-
-      <!-- SIMULADOR DE APORTE -->
-      <div class="simulator" id="dashSimulator">
-        <div class="sim-title">🎛️ Simulador Rápido — E se eu mudasse meu aporte?</div>
-        <div class="sim-slider-wrap">
-          <label>Aporte mensal <strong id="simAporteVal">R$ 500</strong></label>
-          <input type="range" id="simAporte" min="100" max="5000" step="50" value="500" oninput="updateSimulator()">
-        </div>
-        <div class="sim-slider-wrap">
-          <label>Anos investindo <strong id="simAnosVal">30 anos</strong></label>
-          <input type="range" id="simAnos" min="5" max="40" step="1" value="30" oninput="updateSimulator()">
-        </div>
-        <div class="sim-results" id="simResults"></div>
-        <div id="dashTimePower" style="margin-top:12px"></div>
-      </div>
+      <!-- (cenários, custo de investir mal e simulador removidos para simplificar) -->
 
       <!-- RESERVA DE EMERGÊNCIA -->
       <div class="card" id="dashReserva" style="margin-top:4px"></div>
 
-      <!-- CENÁRIO ATUAL vs IDEAL -->
-      <div id="dashCenarios" style="margin-top:4px"></div>
+      <!-- (cenário atual vs ideal removido) -->
 
       <!-- INSIGHTS -->
       <div class="card">
@@ -576,18 +540,19 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
           <div class="form-group"><label>Renda passiva desejada (R$)</label><input type="number" id="p_rendaPassiva" class="gold-input" value="8000" oninput="saveAll()"></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title">Taxas de Mercado</div>
-        <div class="grid-4">
-          <div class="form-group"><label>IPCA (% a.a.)</label><input type="number" step="0.01" id="p_ipca" class="gold-input" value="11.50" oninput="saveAll()"><div class="hint">Inflação real (não confie no oficial!)</div></div>
-          <div class="form-group"><label>CDI (% a.a.)</label><input type="number" step="0.01" id="p_cdi" class="gold-input" value="14.50" oninput="saveAll()"><div class="hint">Taxa básica</div></div>
-          <div class="form-group"><label>Juro Real (% a.a.) <span style="cursor:help;color:var(--gold)" onclick="showTip('Quanto seu dinheiro cresce ACIMA da inflação. Média histórica do Brasil: 3%. Qualquer coisa acima é utopia.',event)">❓</span></label><input type="number" step="0.1" id="p_juroReal" class="gold-input" value="3.0" oninput="saveAll()"><div class="hint">Média histórica BR = 3%. Não mude sem motivo!</div></div>
-          <div class="form-group"><label>CDI − IPCA</label><input type="text" id="p_juroCalc" disabled style="background:var(--gray-light);font-weight:700;color:var(--green)"><div class="hint">Referência automática</div></div>
+      <div class="card" id="perfilTaxasCard">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="card-title" style="margin:0">Taxas de Mercado</div>
+          <button class="btn btn-xs btn-outline" onclick="document.getElementById('taxasAvancadas').style.display=document.getElementById('taxasAvancadas').style.display==='none'?'block':'none'">⚙️ Avançado</button>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Cálculos Automáticos</div>
-        <div class="grid-3" id="perfilCalcs"></div>
+        <div class="form-group"><label>Juro Real (% a.a.) — quanto seu dinheiro cresce ACIMA da inflação</label><input type="number" step="0.1" id="p_juroReal" class="gold-input" value="3.0" oninput="saveAll()"><div class="hint">Média histórica do Brasil = 3%. Não mude sem motivo!</div></div>
+        <div id="taxasAvancadas" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--gray)">
+          <div class="grid-3">
+            <div class="form-group"><label>IPCA (% a.a.)</label><input type="number" step="0.01" id="p_ipca" class="gold-input" value="11.50" oninput="saveAll()"></div>
+            <div class="form-group"><label>CDI (% a.a.)</label><input type="number" step="0.01" id="p_cdi" class="gold-input" value="14.50" oninput="saveAll()"></div>
+            <div class="form-group"><label>CDI − IPCA</label><input type="text" id="p_juroCalc" disabled style="background:var(--gray-light);font-weight:700;color:var(--green)"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -605,13 +570,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
           <div class="pizza-legend" id="pizzaLegend" style="min-width:260px"></div>
         </div>
       </div>
-      <div class="card">
-        <table class="data-table">
-          <thead><tr><th>Categoria</th><th>% Ideal</th><th>Deveria ser</th><th>É hoje (R$)</th><th>Diferença</th><th>Status</th></tr></thead>
-          <tbody id="pizzaTable"></tbody>
-          <tfoot id="pizzaTotal"></tfoot>
-        </table>
-      </div>
+      <div class="card" id="pizzaCards"></div>
     </div>
 
     <!-- ═══════ GASTOS ═══════ -->
@@ -637,31 +596,18 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
         <h2>✨ Planilha Mágica</h2>
         <p>Duas fases: <strong>Acumulação</strong> (aportes + juros) → <strong>Consumo</strong> (retiradas + juros a 3% real)</p>
       </div>
-      <div id="magicaRatesBar"></div>
       <div class="grid-4" id="magicaScenarioCards"></div>
       <div class="card" style="margin-top:4px">
-        <div class="card-title">Evolução do Patrimônio</div>
-        <div class="chart-tabs" id="magicaChartTabs">
-          <button class="chart-tab active" onclick="setMagicChart('saldo',this)">Saldo</button>
-          <button class="chart-tab" onclick="setMagicChart('juros',this)">Juros Puros</button>
-          <button class="chart-tab" onclick="setMagicChart('colchao',this)">Colchão vs Saldo</button>
-        </div>
+        <div class="card-title">📈 Evolução do Patrimônio</div>
         <div style="height:280px"><canvas id="magicaChart"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title">Projeção Ano a Ano</div>
-        <div style="max-height:350px;overflow-y:auto;border-radius:var(--radius-sm)">
+        <div class="card-title">Projeção Resumida</div>
+        <div style="max-height:300px;overflow-y:auto;border-radius:var(--radius-sm)">
           <table class="data-table">
-            <thead><tr><th>Ano</th><th>Idade</th><th>Poupança</th><th>Conservador</th><th>Moderado</th><th>Arrojado</th></tr></thead>
+            <thead><tr><th>Idade</th><th>Fase</th><th>Moderado</th><th>Arrojado</th></tr></thead>
             <tbody id="magicaTable"></tbody>
           </table>
-        </div>
-      </div>
-      <div class="alert-banner warn" style="margin-top:4px">
-        <span>💸</span>
-        <div id="custoInvestirMalWrap">
-          <div style="font-size:0.72rem">CUSTO DE INVESTIR MAL (Arrojado − Poupança)</div>
-          <div style="font-size:1.15rem;font-weight:800" id="custoInvestirMal">R$ 0</div>
         </div>
       </div>
     </div>
@@ -702,35 +648,31 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
         <p>Quanto precisa acumular para viver de renda passiva pelo resto da vida</p>
       </div>
       <div class="card">
-        <div class="grid-4">
+        <div class="grid-3">
           <div style="text-align:center">
             <div class="card-title">Renda desejada</div>
             <div style="font-size:1.2rem;font-weight:800;color:var(--navy)" id="jgRendaDesejada">R$ 0</div>
           </div>
           <div style="text-align:center">
-            <div class="card-title">Juro real anual</div>
+            <div class="card-title">Rendimento real ao ano</div>
             <div style="font-size:1.2rem;font-weight:800;color:var(--green)" id="jgJuroAnual">0%</div>
           </div>
           <div style="text-align:center">
-            <div class="card-title">Juro real mensal</div>
-            <div style="font-size:1.2rem;font-weight:800;color:var(--green)" id="jgJuroMensal">0%</div>
-          </div>
-          <div style="text-align:center">
-            <div class="card-title">Expectativa de vida</div>
-            <div style="font-size:1.2rem;font-weight:800;color:var(--navy)" id="jgExpVida">85 anos</div>
+            <div class="card-title">Viver até</div>
+            <div style="font-size:1.2rem;font-weight:800;color:var(--navy)" id="jgExpVida">120 anos</div>
           </div>
         </div>
       </div>
       <div class="grid-2">
         <div class="jorginho-result">
-          <div class="jr-label">Para viver de renda PARA SEMPRE</div>
+          <div class="jr-label">🟢 Linha do Sucesso — renda PARA SEMPRE</div>
           <div class="jr-value" id="jgForever">R$ 0</div>
-          <div class="jr-sub">Nunca consome o principal</div>
+          <div class="jr-sub">Vive só do rendimento, nunca toca no principal</div>
         </div>
         <div class="jorginho-result" style="background:linear-gradient(135deg,var(--gold-dark),var(--gold))">
-          <div class="jr-label" style="color:var(--navy)">Consumindo até os <span id="jgIdadeLabel">85</span> anos</div>
+          <div class="jr-label" style="color:var(--navy)">🔴 Linha do Jorginho — até os <span id="jgIdadeLabel">120</span> anos</div>
           <div class="jr-value" style="color:var(--navy)" id="jg100">R$ 0</div>
-          <div class="jr-sub" style="color:rgba(0,0,0,0.4)">Linha da Minha Vida</div>
+          <div class="jr-sub" style="color:rgba(0,0,0,0.4)">Gasta o dinheiro todo, acaba zerado</div>
         </div>
       </div>
       <div class="card" style="margin-top:8px">
@@ -916,20 +858,6 @@ function getCompletion(){
 function renderPerfil(){
   const c=getCalcs();
   el('p_juroCalc').value=pct(c.juroCalcRef);
-  const items=[
-    {icon:'📅',value:c.anos+' anos',label:'Anos acumulando'},
-    {icon:'🏖️',value:c.anosConsumo+' anos',label:'Anos de consumo'},
-    {icon:'📈',value:pct(c.juroReal),label:'Juro Real (editável)'},
-    {icon:'🐷',value:c.ratesPctLabel.poupanca,label:'Poupança'},
-    {icon:'⚖️',value:c.ratesPctLabel.moderado,label:'Moderado'},
-    {icon:'🚀',value:c.ratesPctLabel.arrojado,label:'Arrojado'},
-  ];
-  el('perfilCalcs').innerHTML=items.map(i=>`
-    <div style="padding:12px;background:var(--gray-light);border-radius:var(--radius-sm);text-align:center">
-      <div style="font-size:1.1rem">${i.icon}</div>
-      <div style="font-size:1rem;font-weight:800;color:var(--navy);margin:3px 0">${i.value}</div>
-      <div style="font-size:0.68rem;color:var(--text-muted)">${i.label}</div>
-    </div>`).join('');
 }
 
 // (Hierarquia removida)
@@ -944,29 +872,35 @@ const PIZZA_CATS=[
   {key:'invest',label:'Investimentos',pct:0.25,color:'#5B9A3C'}
 ];
 function renderPizza(){
-  const renda=D.perfil.renda;let tbody='',totI=0,totA=0,totD=0;
+  const renda=D.perfil.renda;let totA=0;
+  let cardsHtml='';
   PIZZA_CATS.forEach(c=>{
-    const ideal=renda*c.pct,atual=D.pizza[c.key]||0,diff=ideal-atual;
-    totI+=ideal;totA+=atual;totD+=diff;
+    const ideal=renda*c.pct,atual=D.pizza[c.key]||0;
+    totA+=atual;
     const isInvest=c.key==='invest';
-    // Para investimentos: quanto MAIS melhor (lógica invertida)
-    const statusOk=isInvest?(atual>=ideal):(diff>=0);
-    const diffColor=isInvest?(atual>=ideal?'var(--green)':'var(--red)'):(diff>=0?'var(--green)':'var(--red)');
-    const statusLabel=isInvest?(atual>=ideal?'<span class="status-ok">✅ ÓTIMO</span>':(atual>0?'<span class="status-warn">🔴 BAIXO</span>':'<span class="status-warn">⚠️ ZERO</span>')):(diff>=0?'<span class="status-ok">✅ OK</span>':'<span class="status-warn">🔴 ACIMA</span>');
-    tbody+=`<tr${isInvest?' style="background:var(--green-light)"':''}>
-      <td style="font-weight:600">${c.label}${isInvest?' 💪':''}</td>
-      <td style="text-align:center">${c.pct*100}%${isInvest?'+':''}</td>
-      <td style="text-align:right">${fmt2(ideal)}</td>
-      <td><input type="number" value="${atual||''}" placeholder="0" onchange="D.pizza.${c.key}=parseFloat(this.value)||0;saveData();renderPizza();renderDashboard()"></td>
-      <td style="text-align:right;color:${diffColor};font-weight:600">${isInvest?(atual>=ideal?'▲ '+fmt2(atual-ideal):'▼ '+fmt2(ideal-atual)):fmt2(diff)}</td>
-      <td style="text-align:center">${statusLabel}</td>
-    </tr>`;
+    const statusOk=isInvest?(atual>=ideal):(ideal>=atual);
+    const statusLabel=isInvest?(atual>=ideal?'✅ Ótimo':(atual>0?'🔴 Baixo':'⚠️ Preencha')):(statusOk?'✅ OK':'🔴 Acima');
+    const statusColor=statusOk?'var(--green)':'var(--red)';
+    cardsHtml+=`<div style="padding:14px;background:${statusOk?'var(--white)':'var(--red-light)'};border:2px solid ${statusOk?'var(--gray)':'var(--red)'};border-radius:var(--radius-sm);margin-bottom:8px;transition:all 0.3s">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-weight:700;font-size:0.85rem;color:var(--navy)">${c.label} ${isInvest?'💪':''}</span>
+        <span style="font-size:0.72rem;font-weight:700;color:${statusColor}">${statusLabel}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="number" value="${atual||''}" placeholder="R$ 0" style="flex:1;padding:8px 10px;border:2px solid var(--gray);border-radius:8px;font-size:0.9rem;font-weight:600;font-family:Open Sans"
+          onchange="D.pizza.${c.key}=parseFloat(this.value)||0;saveData();renderPizza();renderDashboard()">
+        <div style="font-size:0.72rem;color:var(--text-muted);min-width:80px;text-align:right">
+          Ideal: <strong>${(c.pct*100).toFixed(0)}%</strong><br>${fmt2(ideal)}
+        </div>
+      </div>
+    </div>`;
   });
-  el('pizzaTable').innerHTML=tbody;
-  el('pizzaTotal').innerHTML=`<tr style="font-weight:700;background:var(--gray-light)">
-    <td>TOTAL</td><td style="text-align:center">100%</td><td style="text-align:right">${fmt2(totI)}</td>
-    <td style="text-align:right">${fmt2(totA)}</td>
-    <td style="text-align:right;color:${totD>=0?'var(--green)':'var(--red)'}">${fmt2(totD)}</td><td></td></tr>`;
+  const sobra=renda-totA;
+  cardsHtml+=`<div style="padding:12px;background:var(--navy);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center;color:var(--white)">
+    <div><span style="font-size:0.7rem;color:var(--gold-light)">TOTAL</span><br><span style="font-size:1.1rem;font-weight:800;color:var(--gold)">${fmt(totA)}</span></div>
+    <div style="text-align:right"><span style="font-size:0.7rem;color:${sobra>=0?'var(--green-light)':'#FF8A8A'}">SOBRA</span><br><span style="font-size:1.1rem;font-weight:800;color:${sobra>=0?'var(--green)':'#FF6B6B'}">${fmt(sobra)}</span></div>
+  </div>`;
+  el('pizzaCards').innerHTML=cardsHtml;
   const vals=PIZZA_CATS.map(c=>D.pizza[c.key]||0);
   if(vals.some(v=>v>0)){
     if(pizzaChartInst)pizzaChartInst.destroy();
@@ -1054,15 +988,6 @@ function renderMagica(){
   const labels=['Poupança','Conservador','Moderado','Arrojado'];
   const cls=['poupanca','conservador','moderado','arrojado'];
   const icons=['🐷','🛡️','⚖️','🚀'];
-  // Rates bar
-  el('magicaRatesBar').innerHTML=`<div class="card" style="margin-bottom:12px">
-    <div class="card-title">Taxas Reais por Perfil (acima da inflação)</div>
-    <div class="grid-4">${names.map((s,i)=>`<div style="text-align:center;padding:10px;background:${i===0?'var(--gray-light)':i===2?'var(--gold-bg)':i===3?'var(--green-light)':'#E3F0FF'};border-radius:var(--radius-sm)">
-      <div style="font-size:1rem">${icons[i]}</div>
-      <div style="font-size:0.72rem;font-weight:700;color:var(--navy)">${labels[i]}</div>
-      <div style="font-size:1rem;font-weight:800;color:${i===0?'var(--red)':i===3?'var(--green)':'var(--navy)'}">${c.ratesPctLabel[s]}</div>
-    </div>`).join('')}</div>
-  </div>`;
   // Scenario cards at aposentadoria
   el('magicaScenarioCards').innerHTML=names.map((s,i)=>{
     const row=proj[s][ai]||{saldo:0};
@@ -1070,43 +995,33 @@ function renderMagica(){
       <div class="sc-icon">${icons[i]}</div>
       <div class="sc-label">${labels[i]}</div>
       <div class="sc-value">${fmt(row.saldo)}</div>
-      <div class="sc-sub">Patrimônio aos ${D.perfil.aposent} anos</div>
+      <div class="sc-sub">aos ${D.perfil.aposent} anos</div>
       ${i===2?'<div class="sc-badge">Recomendado</div>':i===3?'<div class="sc-badge" style="background:var(--green);color:#fff">Máximo</div>':''}
     </div>`;
   }).join('');
-  // Table with phase column
+  // Simplified table — only show every 5 years + aposentadoria
   let tbody='';
   const totalRows=rows.length;
   for(let y=0;y<totalRows;y++){
     const r=proj.poupanca[y];
     const isAposent=r.age===D.perfil.aposent;
+    const show=isAposent||r.age%5===0||y===0||y===totalRows-1;
+    if(!show)continue;
     const hl=isAposent?'background:var(--gold-bg);font-weight:700':'';
-    const faseLabel=r.fase==='acumulacao'?'📈':'🏖️';
-    tbody+=`<tr style="${hl}"><td>${r.year}</td><td>${r.age} ${faseLabel}</td>
-      ${names.map(s=>{
-        const val=proj[s][y]?.saldo||0;
-        const clr=val===0?'color:var(--red)':'';
-        return `<td style="text-align:right;${clr}">${fmt(val)}</td>`;
-      }).join('')}</tr>`;
+    const faseLabel=r.fase==='acumulacao'?'📈 Acumulando':'🏖️ Retirando';
+    const modVal=proj.moderado[y]?.saldo||0;
+    const arrVal=proj.arrojado[y]?.saldo||0;
+    const modClr=modVal===0?'color:var(--red)':'';
+    const arrClr=arrVal===0?'color:var(--red)':'';
+    tbody+=`<tr style="${hl}"><td>${r.age}</td><td style="font-size:0.72rem">${faseLabel}</td>
+      <td style="text-align:right;${modClr}">${fmt(modVal)}</td>
+      <td style="text-align:right;${arrClr}">${fmt(arrVal)}</td></tr>`;
     if(isAposent){
-      tbody+=`<tr style="background:var(--navy);color:var(--gold);font-weight:700;font-size:0.72rem"><td colspan="6" style="padding:6px 10px;text-align:center">▼ FASE DE CONSUMO — Retirada de ${fmt(D.perfil.rendaPassiva)}/mês ▼</td></tr>`;
+      tbody+=`<tr style="background:var(--navy);color:var(--gold);font-weight:700;font-size:0.72rem"><td colspan="4" style="padding:6px 10px;text-align:center">▼ Começa a retirar ${fmt(D.perfil.rendaPassiva)}/mês ▼</td></tr>`;
     }
   }
   el('magicaTable').innerHTML=tbody;
-  // Find when money runs out for poupança
-  const poupZero=proj.poupanca.find(r=>r.fase==='consumo'&&r.saldo===0);
-  const modZero=proj.moderado.find(r=>r.fase==='consumo'&&r.saldo===0);
-  let alertMsg=`<div style="font-size:0.72rem">CUSTO DE INVESTIR MAL (Arrojado − Poupança na aposentadoria)</div>
-    <div style="font-size:1.15rem;font-weight:800" id="custoInvestirMal">${fmt((proj.arrojado[ai]?.saldo||0)-(proj.poupanca[ai]?.saldo||0))}</div>`;
-  if(poupZero){
-    alertMsg+=`<div style="font-size:0.75rem;margin-top:4px">🐷 Na Poupança, dinheiro acaba aos <strong>${poupZero.age} anos</strong></div>`;
-  }
-  if(modZero){
-    alertMsg+=`<div style="font-size:0.75rem;margin-top:2px">⚖️ No Moderado, dinheiro acaba aos <strong>${modZero.age} anos</strong></div>`;
-  }else{
-    alertMsg+=`<div style="font-size:0.75rem;margin-top:2px;color:var(--green)">⚖️ No Moderado, dinheiro dura até os ${D.perfil.expectativaVida||85} anos!</div>`;
-  }
-  el('custoInvestirMalWrap').innerHTML=alertMsg;
+  magicaChartMode='saldo';
   renderMagicaChart(proj);
 }
 function setMagicChart(mode,btn){
@@ -1179,10 +1094,10 @@ function renderTermometro(){
     {id:'metasDef',label:'Tem metas definidas?',type:'sn',pts:t.metasDef==='Sim'?1:0,max:1},
     {id:'dividas',label:'Tem dívidas com juros altos?',type:'sn',invert:true,pts:t.dividas==='Sim'?-2:0,max:0},
     {id:'_gastos',label:'Gastos controlados (≤75% renda)',type:'auto',pts:gastoTotal>0&&gastoPct<=0.75?2:gastoTotal>0&&gastoPct<=0.85?1:0,max:2,detail:gastoTotal>0?(gastoPct*100).toFixed(0)+'%':'—'},
-    {id:'_fire',label:'Patrimônio vs Nº FIRE',type:'auto',pts:firePct>=1.0?3:firePct>=0.5?2:firePct>=0.1?1:0,max:3,detail:(firePct*100).toFixed(0)+'%'},
-    {id:'_extra',label:'Faz aporte extra anual',type:'auto',pts:(p.aporteExtra||0)>0?1:0,max:1,detail:p.aporteExtra>0?fmt(p.aporteExtra):'Não'},
-    {id:'_reservaMeses',label:'Reserva ≥ 6 meses de gastos',type:'auto',pts:mesesReserva>=12?2:mesesReserva>=6?1:0,max:2,detail:mesesReserva>0?mesesReserva.toFixed(1)+' meses':'—'},
-    {id:'_proj',label:'Projeção atinge Linha do Sucesso',type:'auto',pts:modSaldo>=fireNum?4:modSaldo>=fireNum*0.75?3:modSaldo>=fireNum*0.5?2:modSaldo>=fireNum*0.25?1:0,max:4,detail:(projPct*100).toFixed(0)+'%'},
+    {id:'_fire',label:'Já tem o suficiente pra viver de renda?',type:'auto',pts:firePct>=1.0?3:firePct>=0.5?2:firePct>=0.1?1:0,max:3,detail:(firePct*100).toFixed(0)+'%'},
+    {id:'_extra',label:'Investe algum extra por ano (13º, bônus)?',type:'auto',pts:(p.aporteExtra||0)>0?1:0,max:1,detail:p.aporteExtra>0?fmt(p.aporteExtra):'Não'},
+    {id:'_reservaMeses',label:'Tem 6+ meses de gastos guardados?',type:'auto',pts:mesesReserva>=12?2:mesesReserva>=6?1:0,max:2,detail:mesesReserva>0?mesesReserva.toFixed(1)+' meses':'—'},
+    {id:'_proj',label:'Vai conseguir viver de renda na aposentadoria?',type:'auto',pts:modSaldo>=fireNum?4:modSaldo>=fireNum*0.75?3:modSaldo>=fireNum*0.5?2:modSaldo>=fireNum*0.25?1:0,max:4,detail:(projPct*100).toFixed(0)+'%'},
   ];
   let html='';
   criterios.forEach(cr=>{
@@ -1296,8 +1211,7 @@ function renderJorginho(){
   const p=D.perfil,c=getCalcs(),jm=c.rentMensalReal;
   const expVida=p.expectativaVida||85;
   el('jgRendaDesejada').textContent=fmt(p.rendaPassiva);
-  el('jgJuroAnual').textContent=pct(c.juroReal);
-  el('jgJuroMensal').textContent=(jm*100).toFixed(4)+'%';
+  el('jgJuroAnual').textContent=(c.juroReal*100).toFixed(1)+'% ao ano';
   el('jgExpVida').textContent=expVida+' anos';
   el('jgIdadeLabel').textContent=expVida;
   const forever=jm>0?p.rendaPassiva/jm:0;
@@ -1416,30 +1330,10 @@ function renderDashboard(){
     <div class="metric-card navy"><div class="metric-icon">📈</div><div class="metric-value gold">${c.ratesPctLabel.moderado}</div><div class="metric-label">Juro Real (Moderado)</div></div>
     <div class="metric-card"><div class="metric-icon">📅</div><div class="metric-value">${c.anos}a + ${c.anosConsumo}a</div><div class="metric-label">Acumulação + Consumo</div></div>`;
 
-  // LIFE SUMMARY — "Minha vida numa tela"
   const gastoTotal=Object.values(D.gastos).reduce((a,v)=>{if(typeof v==='number')return a+v;const arr=v||[0,0,0];const f=arr.filter(x=>x>0);return a+(f.length?f.reduce((s,x)=>s+x,0)/f.length:0);},0);
   const reservaMeses=gastoTotal>0?p.investido/gastoTotal:0;
   const reservaCor=reservaMeses>=12?'var(--green)':reservaMeses>=6?'var(--gold)':reservaMeses>=3?'var(--gold-dark)':'var(--red)';
   const reservaLabel=reservaMeses>=12?'🏆 Excelente':reservaMeses>=6?'🟢 Bom':reservaMeses>=3?'🟡 Atenção':'🔴 Crítico';
-  el('dashLifeSummary').innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:0.75rem">
-      <div style="padding:10px;background:var(--white);border-radius:var(--radius-sm);border-left:3px solid var(--navy)">
-        <div style="color:var(--text-muted);font-size:0.65rem">Idade / Aposent. / Exp. Vida</div>
-        <div style="font-weight:800;color:var(--navy)">${p.idade} → ${p.aposent} → ${p.expectativaVida||120}</div>
-      </div>
-      <div style="padding:10px;background:var(--white);border-radius:var(--radius-sm);border-left:3px solid var(--gold)">
-        <div style="color:var(--text-muted);font-size:0.65rem">Renda / Gasto / Investe</div>
-        <div style="font-weight:800;color:var(--navy)">${fmt(p.renda)} / ${fmt(gastoTotal)} / ${fmt(p.aporte)}</div>
-      </div>
-      <div style="padding:10px;background:var(--white);border-radius:var(--radius-sm);border-left:3px solid ${reservaCor}">
-        <div style="color:var(--text-muted);font-size:0.65rem">Reserva de Emergência</div>
-        <div style="font-weight:800;color:${reservaCor}">${reservaMeses.toFixed(1)} meses ${reservaLabel}</div>
-      </div>
-      <div style="padding:10px;background:var(--white);border-radius:var(--radius-sm);border-left:3px solid var(--green)">
-        <div style="color:var(--text-muted);font-size:0.65rem">Nota / Linha</div>
-        <div style="font-weight:800;color:var(--navy)">${score}/10 • ${modS>=forever?'🟢 Sucesso':'🔴 Jorginho'}</div>
-      </div>
-    </div>`;
 
   // FIRE NUMBER + Progress bar
   const firePct=forever>0?Math.min(100,(p.investido/forever)*100):0;
@@ -1494,51 +1388,7 @@ function renderDashboard(){
       </div>
     </div>`;
 
-  // CENÁRIO ATUAL vs IDEAL
-  const idealAporte=p.renda*0.25;
-  const mrMod=Math.pow(1+c.rates.moderado,1/12)-1;
-  let saldoAtual=p.investido,saldoIdeal=p.investido;
-  for(let m=0;m<c.anos*12;m++){saldoAtual=saldoAtual*(1+mrMod)+p.aporte;saldoIdeal=saldoIdeal*(1+mrMod)+idealAporte;}
-  el('dashCenarios').innerHTML=`<div class="grid-2">
-    <div class="card" style="border-left:4px solid var(--red);text-align:center">
-      <div style="font-size:0.68rem;font-weight:700;color:var(--red);text-transform:uppercase">Cenário Atual</div>
-      <div style="font-size:0.72rem;color:var(--text-muted);margin:4px 0">Aporte: ${fmt(p.aporte)}/mês</div>
-      <div style="font-size:1.3rem;font-weight:800;color:var(--navy)">${fmt(saldoAtual)}</div>
-      <div style="font-size:0.68rem;color:var(--text-muted)">em ${c.anos} anos</div>
-    </div>
-    <div class="card" style="border-left:4px solid var(--green);text-align:center">
-      <div style="font-size:0.68rem;font-weight:700;color:var(--green);text-transform:uppercase">Cenário Ideal (25% renda)</div>
-      <div style="font-size:0.72rem;color:var(--text-muted);margin:4px 0">Aporte: ${fmt(idealAporte)}/mês</div>
-      <div style="font-size:1.3rem;font-weight:800;color:var(--green)">${fmt(saldoIdeal)}</div>
-      <div style="font-size:0.68rem;color:var(--text-muted)">em ${c.anos} anos — <strong style="color:var(--green)">+${fmt(saldoIdeal-saldoAtual)}</strong></div>
-    </div>
-  </div>`;
-
-  // Scenarios — full width grid-4
-  const sn=['poupanca','conservador','moderado','arrojado'],sl=['Poupança','Conservador','Moderado','Arrojado'];
-  const sIcons=['🐷','🛡️','⚖️','🚀'];
-  el('dashScenarios').innerHTML=sn.map((s,i)=>{
-    const row=proj[s][ai]||{saldo:0};
-    return `<div class="scenario-card ${s}">
-      <div class="sc-icon">${sIcons[i]}</div>
-      <div class="sc-label">${sl[i]}</div>
-      <div class="sc-value">${fmt(row.saldo)}</div>
-      <div class="sc-sub" style="font-size:0.62rem;color:${i===0?'var(--red)':'var(--text-muted)'}">${c.ratesPctLabel[s]}</div>
-      ${i===2?'<div class="sc-badge">Recomendado</div>':i===3?'<div class="sc-badge" style="background:var(--green);color:#fff">Máximo</div>':''}
-    </div>`;
-  }).join('');
-
-  // Custo de investir mal + rates display
-  const custoMal=(proj.arrojado[ai]?.saldo||0)-(proj.poupanca[ai]?.saldo||0);
-  el('dashCustoValue').textContent=fmt(custoMal);
-  // Poupança esgota info
-  const poupZeroDash=proj.poupanca.find(r=>r.fase==='consumo'&&r.saldo===0);
-  const modZeroDash=proj.moderado.find(r=>r.fase==='consumo'&&r.saldo===0);
-  let custoExtra='';
-  if(poupZeroDash)custoExtra+=`<div style="font-size:0.68rem;margin-top:2px">🐷 Na Poupança dinheiro acaba aos ${poupZeroDash.age} anos</div>`;
-  if(!modZeroDash)custoExtra+=`<div style="font-size:0.68rem;margin-top:1px;color:var(--green)">⚖️ No Moderado dura até os ${p.expectativaVida||85} anos</div>`;
-  else custoExtra+=`<div style="font-size:0.68rem;margin-top:1px">⚖️ No Moderado acaba aos ${modZeroDash.age} anos</div>`;
-  el('dashCustoMal').querySelector('.cm-sub').innerHTML='Dinheiro que você perde ficando na poupança'+custoExtra;
+  // (cenários duplicados, custo de investir mal e cenário atual vs ideal removidos)
 
   // Projection chart — Linha do Sucesso (green) vs Linha do Jorginho (red) vs Poupança
   if(dashProjChartInst)dashProjChartInst.destroy();
@@ -1583,25 +1433,7 @@ function renderDashboard(){
     plugins:[aposentPlugin2]
   });
 
-  // Simulator init
-  el('simAporte').value=p.aporte;el('simAnos').value=c.anos||30;
-  updateSimulator();
-
-  // TIME POWER — "Se tivesse começado antes"
-  const mrTP=Math.pow(1+c.rates.moderado,1/12)-1;
-  const timeCards=[5,10,15].map(extra=>{
-    let s=p.investido;
-    for(let m=0;m<(c.anos+extra)*12;m++){s=s*(1+mrTP)+p.aporte;}
-    const diff=s-modS;
-    return `<div style="flex:1;padding:8px;background:rgba(255,255,255,0.06);border-radius:var(--radius-sm);text-align:center">
-      <div style="font-size:0.62rem;color:rgba(255,255,255,0.5)">Se começasse ${extra}a antes</div>
-      <div style="font-size:0.95rem;font-weight:800;color:var(--gold)">${fmt(s)}</div>
-      <div style="font-size:0.62rem;color:#5B9A3C;font-weight:700">+${fmt(diff)}</div>
-    </div>`;
-  });
-  el('dashTimePower').innerHTML=`
-    <div style="font-size:0.65rem;color:var(--gold-light);font-weight:600;text-transform:uppercase;margin-bottom:6px">⏰ O poder do tempo — cada ano conta</div>
-    <div style="display:flex;gap:6px">${timeCards.join('')}</div>`;
+  // (simulador e time power removidos)
 
   // Insights
   renderInsights(proj,ai,c,score);
@@ -1658,41 +1490,7 @@ function renderDashboard(){
   el('navScoreBadge').textContent=score;
 }
 
-// ═══════════════════════════════════════════════
-// SIMULATOR
-// ═══════════════════════════════════════════════
-function updateSimulator(){
-  const aporte=parseInt(el('simAporte').value)||500;
-  const anos=parseInt(el('simAnos').value)||30;
-  el('simAporteVal').textContent=fmt(aporte);
-  el('simAnosVal').textContent=anos+' anos';
-  const p=D.perfil,c=getCalcs();
-  const scenarios=[
-    {name:'Poupança (0,5%)',rate:c.rates.poupanca,cls:''},
-    {name:'Moderado ('+((c.juroReal*100).toFixed(1))+'%)',rate:c.rates.moderado,cls:'style="background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.3)"'},
-    {name:'Arrojado (6%)',rate:c.rates.arrojado,cls:'style="background:rgba(91,154,60,0.1);border:1px solid rgba(91,154,60,0.2)"'},
-  ];
-  let html='';
-  scenarios.forEach(sc=>{
-    const mr=Math.pow(1+sc.rate,1/12)-1;let saldo=p.investido;
-    for(let m=0;m<anos*12;m++){saldo=saldo*(1+mr)+aporte;}
-    html+=`<div class="sim-result-card" ${sc.cls}>
-      <div class="sr-label">${sc.name}</div>
-      <div class="sr-value">${fmt(saldo)}</div>
-      <div class="sr-sub">Patrimônio em ${anos} anos</div>
-    </div>`;
-  });
-  // Difference card
-  const mrP=Math.pow(1+c.rates.poupanca,1/12)-1,mrA=Math.pow(1+c.rates.arrojado,1/12)-1;
-  let sP=p.investido,sA=p.investido;
-  for(let m=0;m<anos*12;m++){sP=sP*(1+mrP)+aporte;sA=sA*(1+mrA)+aporte;}
-  html+=`<div class="sim-result-card" style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.2)">
-    <div class="sr-label" style="color:#FF8A8A">Você perde</div>
-    <div class="sr-value" style="color:#FF6B6B">${fmt(sA-sP)}</div>
-    <div class="sr-sub">ficando na poupança</div>
-  </div>`;
-  el('simResults').innerHTML=html;
-}
+// (Simulador removido para simplificar)
 
 // ═══════════════════════════════════════════════
 // INSIGHTS
