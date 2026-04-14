@@ -584,10 +584,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
         <div id="gastosCards"></div>
         <div id="gastosTotal" style="margin-top:12px"></div>
       </div>
-      <div class="grid-2">
-        <div class="card"><div class="card-title">Gastos por Categoria</div><canvas id="gastosBarChart" height="220"></canvas></div>
-        <div class="card"><div class="card-title">Distribuição</div><canvas id="gastosPieChart" height="220"></canvas></div>
-      </div>
     </div>
 
     <!-- ═══════ MÁGICA ═══════ -->
@@ -920,7 +916,6 @@ function renderPizza(){
 // ═══════════════════════════════════════════════
 // RENDER: GASTOS
 // ═══════════════════════════════════════════════
-var gastosBarInst=null,gastosPieInst=null;
 const GASTOS_CATS=[
   {key:'habitacao',label:'Habitação',limit:0.30},
   {key:'alimentacao',label:'Alimentação',limit:0.15},
@@ -931,13 +926,13 @@ const GASTOS_CATS=[
   {key:'outrasDespesas',label:'Outras Despesas',limit:0.02}
 ];
 function renderGastos(){
-  const renda=D.perfil.renda;const avgs=[],labels=[];let totalGasto=0;
+  const renda=D.perfil.renda;let totalGasto=0;
   let html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
   GASTOS_CATS.forEach(c=>{
     const val=D.gastos[c.key]||0;
     const pr=renda>0?val/renda:0;
     const limOk=pr<=c.limit;
-    avgs.push(val);labels.push(c.label);totalGasto+=val;
+    totalGasto+=val;
     html+=`<div style="padding:12px;background:${limOk?'var(--white)':'var(--red-light)'};border:2px solid ${limOk?'var(--gray)':'var(--red)'};border-radius:var(--radius-sm);transition:all 0.3s">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <span style="font-weight:700;font-size:0.82rem;color:var(--navy)">${c.label}</span>
@@ -957,20 +952,6 @@ function renderGastos(){
       <div><span style="font-size:0.72rem;color:var(--gold-light)">TOTAL GASTOS</span><br><span style="font-size:1.2rem;font-weight:800;color:var(--gold)">${fmt(totalGasto)}</span> <span style="font-size:0.72rem;color:rgba(255,255,255,0.5)">(${pct1(tp)} da renda)</span></div>
       <div style="text-align:right"><span style="font-size:0.72rem;color:${sobra>=0?'var(--green-light)':'#FF8A8A'}">SOBRA PRA INVESTIR</span><br><span style="font-size:1.2rem;font-weight:800;color:${sobra>=0?'var(--green)':'#FF6B6B'}">${fmt(sobra)}</span></div>
     </div>`;
-  const fa=avgs.filter(v=>v>0),fl=labels.filter((_,i)=>avgs[i]>0);
-  if(fa.length>0){
-    if(gastosBarInst)gastosBarInst.destroy();
-    gastosBarInst=new Chart(el('gastosBarChart'),{type:'bar',
-      data:{labels:fl,datasets:[{data:fa,backgroundColor:'#C9A84C',borderRadius:4}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>fmt(v)}},x:{ticks:{font:{size:9}}}}}
-    });
-    if(gastosPieInst)gastosPieInst.destroy();
-    const pc=['#0D1B2A','#1B3A5C','#5A7FA0','#C9A84C','#5B9A3C','#A07E2E','#666'];
-    gastosPieInst=new Chart(el('gastosPieChart'),{type:'doughnut',
-      data:{labels:fl,datasets:[{data:fa,backgroundColor:pc.slice(0,fl.length),borderWidth:2,borderColor:'#fff'}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:9}}}}}
-    });
-  }
 }
 function updateGasto(key,val){
   D.gastos[key]=parseFloat(val)||0;saveData();renderGastos();renderDashboard();
