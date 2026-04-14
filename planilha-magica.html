@@ -555,7 +555,12 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
           <div class="card-title" style="margin:0">Taxas de Mercado</div>
           <button class="btn btn-xs btn-outline" onclick="document.getElementById('taxasAvancadas').style.display=document.getElementById('taxasAvancadas').style.display==='none'?'block':'none'">⚙️ Avançado</button>
         </div>
-        <div class="form-group"><label>Juro Real (% a.a.) — quanto seu dinheiro cresce ACIMA da inflação</label><input type="number" step="0.1" id="p_juroReal" class="gold-input" value="3.0" oninput="saveAll()"><div class="hint">Média histórica do Brasil = 3%. Não mude sem motivo!</div></div>
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px">Juro real = quanto seu dinheiro cresce <strong>acima da inflação</strong>. Esses valores alimentam a Planilha Mágica.</div>
+        <div class="grid-3">
+          <div class="form-group"><label>🛡️ Conservador (% a.a.)</label><input type="number" step="0.1" id="p_jrConservador" class="gold-input" value="3.0" oninput="saveAll()"><div class="hint">Tesouro IPCA+, CDB de banco grande</div></div>
+          <div class="form-group"><label>⚖️ Moderado (% a.a.)</label><input type="number" step="0.1" id="p_jrModerado" class="gold-input" value="5.0" oninput="saveAll()"><div class="hint">Mix renda fixa + fundos + ações</div></div>
+          <div class="form-group"><label>🚀 Arrojado (% a.a.)</label><input type="number" step="0.1" id="p_jrArrojado" class="gold-input" value="8.0" oninput="saveAll()"><div class="hint">Ações, FIIs, exterior diversificado</div></div>
+        </div>
         <div id="taxasAvancadas" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--gray)">
           <div class="grid-3">
             <div class="form-group"><label>IPCA (% a.a.)</label><input type="number" step="0.01" id="p_ipca" class="gold-input" value="11.50" oninput="saveAll()"></div>
@@ -600,7 +605,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
     <div class="section" id="sec-magica">
       <div class="section-header">
         <h2>✨ Planilha Mágica</h2>
-        <p>Duas fases: <strong>Acumulação</strong> (aportes + juros) → <strong>Consumo</strong> (retiradas + juros a 3% real)</p>
+        <p>Duas fases: <strong>Acumulação</strong> (aportes + juros) → <strong>Consumo</strong> (retiradas + juros reais editáveis)</p>
       </div>
       <div class="grid-4" id="magicaScenarioCards"></div>
       <div class="card" style="margin-top:4px">
@@ -712,7 +717,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
 // ═══════════════════════════════════════════════
 const STORAGE_KEY = 'planilhaMagica_v2';
 const DEFAULT_DATA = {
-  perfil:{nome:'',idade:30,aposent:65,expectativaVida:120,perfil:'Moderado',renda:5000,investido:10000,aporte:500,aporteExtra:0,rendaPassiva:8000,previdencia:0,imoveis:0,veiculos:0,outrosBens:0,ipca:11.50,cdi:14.50,juroReal:3.0},
+  perfil:{nome:'',idade:30,aposent:65,expectativaVida:120,perfil:'Moderado',renda:5000,investido:10000,aporte:500,aporteExtra:0,rendaPassiva:8000,previdencia:0,imoveis:0,veiculos:0,outrosBens:0,ipca:11.50,cdi:14.50,jrConservador:3.0,jrModerado:5.0,jrArrojado:8.0},
   hierarquia:{items:['Moradia','Alimentação','Saúde','Educação','Viagem','Lazer e Diversão','Vestuário','Família','Liberdade Financeira','Outros'],reflexoes:['','']},
   pizza:{fixas:0,estilo:0,invest:0},
   gastos:{},
@@ -734,7 +739,9 @@ function readPerfil(){
   D.perfil.previdencia=num('p_previdencia');
   D.perfil.imoveis=num('p_imoveis');D.perfil.veiculos=num('p_veiculos');D.perfil.outrosBens=num('p_outrosBens');
   D.perfil.ipca=parseFloat(el('p_ipca').value)||0;D.perfil.cdi=parseFloat(el('p_cdi').value)||0;
-  D.perfil.juroReal=parseFloat(el('p_juroReal').value)||3.0;
+  D.perfil.jrConservador=parseFloat(el('p_jrConservador').value)||0;
+  D.perfil.jrModerado=parseFloat(el('p_jrModerado').value)||0;
+  D.perfil.jrArrojado=parseFloat(el('p_jrArrojado').value)||0;
 }
 
 // ═══════════════════════════════════════════════
@@ -754,25 +761,30 @@ function getCalcs(){
   const p=D.perfil,cdi=p.cdi/100,ipca=p.ipca/100;
   const anos=Math.max(0,p.aposent-p.idade),meses=anos*12;
   const anosConsumo=Math.max(0,(p.expectativaVida||85)-p.aposent);
-  const juroReal=(p.juroReal||3.0)/100;
+  // Migração: se o usuário tinha 'juroReal' antigo, usa como moderado
+  const jrCons=(p.jrConservador!=null?p.jrConservador:3.0)/100;
+  const jrMod=(p.jrModerado!=null?p.jrModerado:(p.juroReal!=null?p.juroReal:5.0))/100;
+  const jrArr=(p.jrArrojado!=null?p.jrArrojado:8.0)/100;
+  const juroReal=jrMod; // compat: resto do app usa juroReal como referência do Moderado
   const juroCalcRef=cdi-ipca;
   const rentMensalCDI=Math.pow(1+cdi,1/12)-1;
   const rentMensalReal=Math.pow(1+juroReal,1/12)-1;
   const rendaPassivaLiquida=Math.max(0,(p.rendaPassiva||0)-(p.previdencia||0));
   const patrimonioFisico=(p.imoveis||0)+(p.veiculos||0)+(p.outrosBens||0);
   const patrimonioTotal=(p.investido||0)+patrimonioFisico;
-  // Taxas reais anuais por perfil
+  // Taxas reais anuais por perfil — editáveis no Perfil
   const rates={
-    poupanca:0.005,       // ~0.5% real (poupança mal bate inflação)
-    conservador:0.02,     // ~2% real (Tesouro IPCA+)
-    moderado:juroReal,    // 3% real (média histórica BR)
-    arrojado:0.06         // ~6% real (renda variável diversificada)
+    poupanca:0.005,     // poupança mal bate inflação
+    conservador:jrCons,
+    moderado:jrMod,
+    arrojado:jrArr
   };
+  const fmtPct=v=>((v*100).toFixed(1)).replace('.',',')+'% a.a. real';
   const ratesPctLabel={
     poupanca:'0,5% a.a. real',
-    conservador:'2,0% a.a. real',
-    moderado:((juroReal*100).toFixed(1)).replace('.',',')+('% a.a. real'),
-    arrojado:'6,0% a.a. real'
+    conservador:fmtPct(jrCons),
+    moderado:fmtPct(jrMod),
+    arrojado:fmtPct(jrArr)
   };
   return {cdi,ipca,anos,meses,anosConsumo,juroReal,juroCalcRef,rentMensalCDI,rentMensalReal,rates,ratesPctLabel,rendaPassivaLiquida,patrimonioFisico,patrimonioTotal};
 }
@@ -1005,9 +1017,11 @@ function renderMagica(){
   // Scenario cards at aposentadoria
   el('magicaScenarioCards').innerHTML=names.map((s,i)=>{
     const row=proj[s][ai]||{saldo:0};
+    const rateLabel=c.ratesPctLabel[s];
     return `<div class="scenario-card ${cls[i]}">
       <div class="sc-icon">${icons[i]}</div>
       <div class="sc-label">${labels[i]}</div>
+      <div style="font-size:0.7rem;color:var(--gold-dark);font-weight:700;margin:-2px 0 4px">${rateLabel}</div>
       <div class="sc-value">${fmt(row.saldo)}</div>
       <div class="sc-sub">aos ${D.perfil.aposent} anos</div>
       ${i===2?'<div class="sc-badge">Recomendado</div>':i===3?'<div class="sc-badge" style="background:var(--green);color:#fff">Máximo</div>':''}
@@ -1614,7 +1628,7 @@ function checkAchievements(){
 // DEMO DATA
 // ═══════════════════════════════════════════════
 function loadDemoData(){
-  D.perfil={nome:'Maria Silva',idade:28,aposent:65,expectativaVida:120,perfil:'Moderado',renda:6500,investido:25000,aporte:1200,aporteExtra:5000,rendaPassiva:10000,ipca:11.50,cdi:14.50,juroReal:3.0};
+  D.perfil={nome:'Maria Silva',idade:28,aposent:65,expectativaVida:120,perfil:'Moderado',renda:6500,investido:25000,aporte:1200,aporteExtra:5000,rendaPassiva:10000,previdencia:0,imoveis:0,veiculos:0,outrosBens:0,ipca:11.50,cdi:14.50,jrConservador:3.0,jrModerado:5.0,jrArrojado:8.0};
   D.pizza={fixas:3200,estilo:1500,invest:1200};
   D.gastos={habitacao:1800,alimentacao:1060,educacao:200,saude:350,transporte:250,despFinanc:430,outrasDespesas:180};
   D.termometro={reserva:'Sim',cdi:'Sim',metasDef:'Sim',dividas:'Não'};
@@ -1720,7 +1734,9 @@ function populateInputs(){
   el('p_previdencia').value=p.previdencia||0;
   el('p_imoveis').value=p.imoveis||0;el('p_veiculos').value=p.veiculos||0;el('p_outrosBens').value=p.outrosBens||0;
   el('p_ipca').value=p.ipca;el('p_cdi').value=p.cdi;
-  el('p_juroReal').value=p.juroReal||3.0;
+  el('p_jrConservador').value=(p.jrConservador!=null?p.jrConservador:3.0);
+  el('p_jrModerado').value=(p.jrModerado!=null?p.jrModerado:(p.juroReal!=null?p.juroReal:5.0));
+  el('p_jrArrojado').value=(p.jrArrojado!=null?p.jrArrojado:8.0);
 }
 // ═══════════════════════════════════════════════
 // WHATSAPP SHARE
