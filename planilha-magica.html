@@ -411,7 +411,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
     <nav class="sidebar-nav" id="sidebarNav">
       <button class="active" onclick="goTo('dashboard')"><span class="icon">📊</span>Dashboard<span class="badge" id="navScoreBadge">0</span></button>
       <button onclick="goTo('perfil')"><span class="icon">👤</span>Perfil</button>
-      <button onclick="goTo('hierarquia')"><span class="icon">💎</span>Hierarquia de Valor</button>
       <button onclick="goTo('pizza')"><span class="icon">🍕</span>Pizza Financeira</button>
       <button onclick="goTo('gastos')"><span class="icon">💸</span>Controle de Gastos</button>
       <button onclick="goTo('magica')"><span class="icon">✨</span>Planilha Mágica</button>
@@ -589,26 +588,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
       <div class="card">
         <div class="card-title">Cálculos Automáticos</div>
         <div class="grid-3" id="perfilCalcs"></div>
-      </div>
-    </div>
-
-    <!-- ═══════ HIERARQUIA ═══════ -->
-    <div class="section" id="sec-hierarquia">
-      <div class="section-header">
-        <h2>💎 Hierarquia de Valor</h2>
-        <p>Arraste para ordenar (1 = mais importante)</p>
-      </div>
-      <div class="card"><div id="hierarquiaList"></div></div>
-      <div class="card">
-        <div class="card-title">Reflexões</div>
-        <div class="form-group">
-          <label>O que é mais importante nessa fase da vida?</label>
-          <textarea id="h_reflexao1" rows="2" oninput="saveAll()"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Em que gasta dinheiro que NÃO bate com suas prioridades?</label>
-          <textarea id="h_reflexao2" rows="2" oninput="saveAll()"></textarea>
-        </div>
       </div>
     </div>
 
@@ -893,7 +872,7 @@ function goTo(section){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   el('sec-'+section).classList.add('active');
   document.querySelectorAll('.sidebar-nav button').forEach(b=>b.classList.remove('active'));
-  const map=['dashboard','perfil','hierarquia','pizza','gastos','magica','termometro','jorginho','metas'];
+  const map=['dashboard','perfil','pizza','gastos','magica','termometro','jorginho','metas'];
   const idx=map.indexOf(section);
   if(idx>=0)document.querySelectorAll('.sidebar-nav button')[idx].classList.add('active');
   if(window.innerWidth<=768)toggleSidebar(false);
@@ -919,13 +898,12 @@ function recalcSection(s){
 // COMPLETION TRACKER
 // ═══════════════════════════════════════════════
 function getCompletion(){
-  let done=0,total=7;
+  let done=0,total=6;
   if(D.perfil.nome)done++;
   if(D.pizza.fixas||D.pizza.estilo||D.pizza.invest)done++;
   if(Object.keys(D.gastos).length>0)done++;
   if(D.termometro.reserva!==null)done++;
   if(D.metas.length>0)done++;
-  if(D.hierarquia.reflexoes[0])done++;
   const hasGastoData=Object.values(D.gastos).some(v=>typeof v==='number'?v>0:(v&&v.some&&v.some(x=>x>0)));
   if(hasGastoData)done++;else if(Object.keys(D.gastos).length>0)done--;
   done=Math.min(done,total);
@@ -954,30 +932,7 @@ function renderPerfil(){
     </div>`).join('');
 }
 
-// ═══════════════════════════════════════════════
-// RENDER: HIERARQUIA
-// ═══════════════════════════════════════════════
-function renderHierarquia(){
-  el('hierarquiaList').innerHTML=D.hierarquia.items.map((item,i)=>`
-    <div class="value-item" draggable="true" data-idx="${i}"
-      ondragstart="hiDragStart(event)" ondragover="hiDragOver(event)" ondrop="hiDrop(event)" ondragend="hiDragEnd(event)">
-      <div class="vi-rank">${i+1}</div>
-      <div class="vi-name">${item}</div>
-      <div class="vi-drag">⠿</div>
-    </div>`).join('');
-  el('h_reflexao1').value=D.hierarquia.reflexoes[0]||'';
-  el('h_reflexao2').value=D.hierarquia.reflexoes[1]||'';
-}
-var hiDragIdx=null;
-function hiDragStart(e){hiDragIdx=+e.currentTarget.dataset.idx;e.currentTarget.classList.add('dragging');}
-function hiDragOver(e){e.preventDefault();}
-function hiDrop(e){
-  e.preventDefault();const t=+e.currentTarget.dataset.idx;
-  if(hiDragIdx===null||hiDragIdx===t)return;
-  const item=D.hierarquia.items.splice(hiDragIdx,1)[0];
-  D.hierarquia.items.splice(t,0,item);saveData();renderHierarquia();toast('Prioridades atualizadas!','info');
-}
-function hiDragEnd(e){e.currentTarget.classList.remove('dragging');hiDragIdx=null;}
+// (Hierarquia removida)
 
 // ═══════════════════════════════════════════════
 // RENDER: PIZZA
@@ -1205,32 +1160,56 @@ function renderMagicaChart(proj){
 // ═══════════════════════════════════════════════
 function renderTermometro(){
   const p=D.perfil,t=D.termometro;
+  const c=getCalcs();
+  const gastoTotal=Object.values(D.gastos).reduce((a,v)=>a+(typeof v==='number'?v:0),0);
+  const gastoPct=p.renda>0?gastoTotal/p.renda:1;
+  const pctAporte=p.renda>0?p.aporte/p.renda:0;
+  const jm=c.rentMensalReal;
+  const fireNum=jm>0?p.rendaPassiva/jm:99999999;
+  const firePct=fireNum>0?p.investido/fireNum:0;
+  const mesesReserva=gastoTotal>0?p.investido/gastoTotal:(p.investido/(p.renda*0.7));
+  const proj=projectScenarios();
+  const ai=Math.max(0,(proj.moderado||[]).findIndex(r=>r.age>=p.aposent));
+  const modSaldo=proj.moderado[ai]?.saldo||0;
+  const projPct=fireNum>0?modSaldo/fireNum:0;
   const criterios=[
-    {id:'reserva',label:'Tem reserva de emergência?',type:'sn'},
-    {id:'aporte25',label:'Aporte ≥ 25% da renda?',type:'auto',calc:()=>p.aporte>=p.renda*0.25?2:(p.aporte>=p.renda*0.15?1:0)},
-    {id:'cdi',label:'Investe acima de 100% CDI?',type:'sn'},
-    {id:'metasDef',label:'Tem metas definidas?',type:'sn'},
-    {id:'dividas',label:'Tem dívidas com juros altos?',type:'sn',invert:true},
-    {id:'projecao',label:'Projeção atinge renda desejada?',type:'auto',calc:()=>p.rendaPassiva>=p.renda*0.8?3:(p.rendaPassiva>=p.renda*0.5?2:1)},
+    {id:'reserva',label:'Tem reserva de emergência?',type:'sn',pts:t.reserva==='Sim'?2:0,max:2},
+    {id:'_aporte',label:'Aporte ≥ 25% da renda',type:'auto',pts:pctAporte>=0.30?3:pctAporte>=0.25?2:pctAporte>=0.15?1:0,max:3,detail:pctAporte>0?(pctAporte*100).toFixed(0)+'%':'0%'},
+    {id:'cdi',label:'Investe acima de 100% CDI?',type:'sn',pts:t.cdi==='Sim'?2:0,max:2},
+    {id:'metasDef',label:'Tem metas definidas?',type:'sn',pts:t.metasDef==='Sim'?1:0,max:1},
+    {id:'dividas',label:'Tem dívidas com juros altos?',type:'sn',invert:true,pts:t.dividas==='Sim'?-2:0,max:0},
+    {id:'_gastos',label:'Gastos controlados (≤75% renda)',type:'auto',pts:gastoTotal>0&&gastoPct<=0.75?2:gastoTotal>0&&gastoPct<=0.85?1:0,max:2,detail:gastoTotal>0?(gastoPct*100).toFixed(0)+'%':'—'},
+    {id:'_fire',label:'Patrimônio vs Nº FIRE',type:'auto',pts:firePct>=1.0?3:firePct>=0.5?2:firePct>=0.1?1:0,max:3,detail:(firePct*100).toFixed(0)+'%'},
+    {id:'_extra',label:'Faz aporte extra anual',type:'auto',pts:(p.aporteExtra||0)>0?1:0,max:1,detail:p.aporteExtra>0?fmt(p.aporteExtra):'Não'},
+    {id:'_reservaMeses',label:'Reserva ≥ 6 meses de gastos',type:'auto',pts:mesesReserva>=12?2:mesesReserva>=6?1:0,max:2,detail:mesesReserva>0?mesesReserva.toFixed(1)+' meses':'—'},
+    {id:'_proj',label:'Projeção atinge Linha do Sucesso',type:'auto',pts:modSaldo>=fireNum?4:modSaldo>=fireNum*0.75?3:modSaldo>=fireNum*0.5?2:modSaldo>=fireNum*0.25?1:0,max:4,detail:(projPct*100).toFixed(0)+'%'},
   ];
   let html='';
   criterios.forEach(cr=>{
+    const ptsColor=cr.pts>0?'var(--green)':cr.pts<0?'var(--red)':'var(--text-muted)';
+    const ptsLabel=cr.pts>0?'+'+cr.pts:cr.pts<0?cr.pts:'0';
     if(cr.type==='sn'){
       const val=t[cr.id];
-      html+=`<div style="padding:10px 0;border-bottom:1px solid var(--gray);display:flex;align-items:center;gap:10px">
-        <div style="flex:1;font-size:0.82rem;font-weight:600">${cr.label}</div>
+      html+=`<div style="padding:10px 0;border-bottom:1px solid var(--gray);display:flex;align-items:center;gap:8px">
+        <div style="flex:1;font-size:0.8rem;font-weight:600">${cr.label}</div>
+        <span style="font-size:0.65rem;font-weight:700;color:${ptsColor};min-width:28px;text-align:center">${ptsLabel}/${cr.max}</span>
         <div style="display:flex;gap:3px">
           <button class="btn btn-xs ${val==='Sim'?'btn-gold':'btn-outline'}" onclick="setTerm('${cr.id}','Sim')">Sim</button>
           <button class="btn btn-xs ${val==='Não'?'btn-navy':'btn-outline'}" onclick="setTerm('${cr.id}','Não')">Não</button>
         </div>
       </div>`;
     }else{
-      html+=`<div style="padding:10px 0;border-bottom:1px solid var(--gray);display:flex;align-items:center;gap:10px">
-        <div style="flex:1;font-size:0.82rem;font-weight:600">${cr.label}</div>
-        <span style="font-size:0.7rem;padding:3px 8px;border-radius:8px;background:var(--gray-light);color:var(--text-muted);font-weight:600">Auto: ${cr.calc()} pts</span>
+      html+=`<div style="padding:10px 0;border-bottom:1px solid var(--gray);display:flex;align-items:center;gap:8px">
+        <div style="flex:1;font-size:0.8rem;font-weight:600">${cr.label}</div>
+        <span style="font-size:0.65rem;padding:2px 6px;border-radius:6px;background:var(--gray-light);color:var(--text-muted);font-weight:600">${cr.detail||''}</span>
+        <span style="font-size:0.65rem;font-weight:700;color:${ptsColor};min-width:28px;text-align:center">${ptsLabel}/${cr.max}</span>
       </div>`;
     }
   });
+  const totalPts=criterios.reduce((a,cr)=>a+Math.max(0,cr.pts),0);
+  html+=`<div style="padding:12px 0;display:flex;justify-content:space-between;font-size:0.78rem;font-weight:700;color:var(--navy)">
+    <span>Total de pontos</span><span>${totalPts} / 20</span>
+  </div>`;
   el('termCriterios').innerHTML=html;
   const score=calcScore();
   const circ=2*Math.PI*68;
@@ -1273,11 +1252,41 @@ function renderTermometro(){
 }
 function setTerm(id,val){D.termometro[id]=val;saveData();renderTermometro();updateSidebar();renderDashboard();}
 function calcScore(){
-  const p=D.perfil,t=D.termometro;let s=0;
-  s+=(t.reserva==='Sim'?2:0);s+=(p.aporte>=p.renda*0.25?2:(p.aporte>=p.renda*0.15?1:0));
-  s+=(t.cdi==='Sim'?2:0);s+=(t.metasDef==='Sim'?1:0);s+=(t.dividas==='Sim'?-1:0);
-  s+=(p.rendaPassiva>=p.renda*0.8?3:(p.rendaPassiva>=p.renda*0.5?2:1));
-  return Math.min(10,Math.max(0,s));
+  const p=D.perfil,t=D.termometro,c=getCalcs();
+  let pts=0,maxPts=20;
+  // 1. Reserva de emergência (0-2)
+  pts+=(t.reserva==='Sim'?2:0);
+  // 2. Aporte ≥ 25% da renda (0-3) — mais exigente
+  const pctAporte=p.renda>0?p.aporte/p.renda:0;
+  pts+=(pctAporte>=0.30?3:pctAporte>=0.25?2:pctAporte>=0.15?1:0);
+  // 3. Investe acima de 100% CDI (0-2)
+  pts+=(t.cdi==='Sim'?2:0);
+  // 4. Tem metas definidas (0-1)
+  pts+=(t.metasDef==='Sim'?1:0);
+  // 5. Sem dívidas com juros altos (-2 penalty)
+  pts+=(t.dividas==='Sim'?-2:0);
+  // 6. Gastos preenchidos e controlados (0-2)
+  const gastoTotal=Object.values(D.gastos).reduce((a,v)=>a+(typeof v==='number'?v:0),0);
+  const gastoPct=p.renda>0?gastoTotal/p.renda:1;
+  pts+=(gastoTotal>0&&gastoPct<=0.75?2:gastoTotal>0&&gastoPct<=0.85?1:0);
+  // 7. Patrimônio já acumulado vs FIRE (0-3) — muito difícil
+  const jm=c.rentMensalReal;
+  const fireNum=jm>0?p.rendaPassiva/jm:99999999;
+  const firePct=fireNum>0?p.investido/fireNum:0;
+  pts+=(firePct>=1.0?3:firePct>=0.5?2:firePct>=0.1?1:0);
+  // 8. Aporte extra anual (0-1)
+  pts+=((p.aporteExtra||0)>0?1:0);
+  // 9. Reserva de emergência ≥ 6 meses (0-2)
+  const mesesReserva=gastoTotal>0?p.investido/gastoTotal:(p.investido/(p.renda*0.7));
+  pts+=(mesesReserva>=12?2:mesesReserva>=6?1:0);
+  // 10. Projeção atinge Linha do Sucesso (0-4) — o mais difícil
+  const proj=projectScenarios();
+  const ai=Math.max(0,(proj.moderado||[]).findIndex(r=>r.age>=p.aposent));
+  const modSaldo=proj.moderado[ai]?.saldo||0;
+  pts+=(modSaldo>=fireNum?4:modSaldo>=fireNum*0.75?3:modSaldo>=fireNum*0.5?2:modSaldo>=fireNum*0.25?1:0);
+  // Normalize to 0-10
+  const raw=Math.max(0,pts);
+  return Math.min(10,Math.round(raw/maxPts*10));
 }
 
 // ═══════════════════════════════════════════════
@@ -1800,17 +1809,17 @@ function loadDemoData(){
     {nome:'Entrada Apartamento',valor:100000,tem:15000,prazo:60},
     {nome:'Curso MBA',valor:30000,tem:8000,prazo:36}
   ];
-  D.hierarquia={items:['Liberdade Financeira','Saúde','Família','Educação','Moradia','Viagem','Alimentação','Lazer e Diversão','Vestuário','Outros'],reflexoes:['Quero ter liberdade para escolher como viver sem depender de salário.','Gasto muito com delivery e roupas que não uso.']};
+  // hierarquia removida
   D.firstVisit=false;
   D.isDemo=true;
-  saveData();populateInputs();renderHierarquia();recalcAll();lastScore=calcScore();
+  saveData();populateInputs();recalcAll();lastScore=calcScore();
   toast('Dados de exemplo carregados! Explore tudo.','success');
 }
 
 function clearAndStartFresh(){
   D=JSON.parse(JSON.stringify(DEFAULT_DATA));
   D.firstVisit=false;
-  saveData();populateInputs();renderHierarquia();recalcAll();lastScore=calcScore();
+  saveData();populateInputs();recalcAll();lastScore=calcScore();
   goTo('perfil');
   toast('Comece preenchendo seus dados!','info');
 }
@@ -1859,7 +1868,6 @@ function renderChecklist(){
     {id:'gastos',label:'Controle de Gastos',desc:'Preencha seus gastos por categoria',done:Object.values(D.gastos).some(v=>typeof v==='number'?v>0:(v&&v.some&&v.some(x=>x>0))),section:'gastos'},
     {id:'term',label:'Termômetro Financeiro',desc:'Responda 4 perguntas e descubra sua nota',done:D.termometro.reserva!==null,section:'termometro'},
     {id:'metas',label:'Definir Metas SMART',desc:'Crie pelo menos uma meta com valor e prazo',done:D.metas.length>0,section:'metas'},
-    {id:'hier',label:'Hierarquia de Valor',desc:'Ordene suas prioridades e reflita',done:!!(D.hierarquia.reflexoes[0]),section:'hierarquia'},
   ];
   const allDone=steps.every(s=>s.done);
   const pending=steps.filter(s=>!s.done);
@@ -1940,7 +1948,7 @@ function showTip(text,event){
 }
 
 window.addEventListener('DOMContentLoaded',()=>{
-  loadData();populateInputs();renderHierarquia();recalcAll();lastScore=calcScore();showOnboarding();
+  loadData();populateInputs();recalcAll();lastScore=calcScore();showOnboarding();
 });
 </script>
 </body>
