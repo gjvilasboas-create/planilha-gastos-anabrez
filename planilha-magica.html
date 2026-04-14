@@ -537,8 +537,18 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
           <div class="form-group"><label>Valor já investido (R$)</label><input type="number" id="p_investido" class="gold-input" value="10000" oninput="saveAll()"></div>
           <div class="form-group"><label>Aporte mensal (R$)</label><input type="number" id="p_aporte" class="gold-input" value="500" oninput="saveAll()"></div>
           <div class="form-group"><label>Aporte extra anual (R$)</label><input type="number" id="p_aporteExtra" class="gold-input" value="0" oninput="saveAll()"><div class="hint">13º, bônus, renda extra anual</div></div>
-          <div class="form-group"><label>Renda passiva desejada (R$)</label><input type="number" id="p_rendaPassiva" class="gold-input" value="8000" oninput="saveAll()"></div>
+          <div class="form-group"><label>Renda passiva desejada (R$/mês)</label><input type="number" id="p_rendaPassiva" class="gold-input" value="8000" oninput="saveAll()"></div>
+          <div class="form-group"><label>Previdência já garantida (R$/mês)</label><input type="number" id="p_previdencia" class="gold-input" value="0" oninput="saveAll()"><div class="hint">INSS, militar, previdência privada — é descontado do FIRE</div></div>
         </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💼 Patrimônio Físico (opcional)</div>
+        <div class="grid-3">
+          <div class="form-group"><label>Imóveis (R$)</label><input type="number" id="p_imoveis" class="gold-input" value="0" oninput="saveAll()"><div class="hint">Valor de mercado dos seus imóveis</div></div>
+          <div class="form-group"><label>Veículos (R$)</label><input type="number" id="p_veiculos" class="gold-input" value="0" oninput="saveAll()"><div class="hint">Valor FIPE atual</div></div>
+          <div class="form-group"><label>Outros bens (R$)</label><input type="number" id="p_outrosBens" class="gold-input" value="0" oninput="saveAll()"><div class="hint">Terrenos, joias, etc.</div></div>
+        </div>
+        <div id="patrimonioResumo" style="margin-top:10px"></div>
       </div>
       <div class="card" id="perfilTaxasCard">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -702,7 +712,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;hei
 // ═══════════════════════════════════════════════
 const STORAGE_KEY = 'planilhaMagica_v2';
 const DEFAULT_DATA = {
-  perfil:{nome:'',idade:30,aposent:65,expectativaVida:120,perfil:'Moderado',renda:5000,investido:10000,aporte:500,aporteExtra:0,rendaPassiva:8000,ipca:11.50,cdi:14.50,juroReal:3.0},
+  perfil:{nome:'',idade:30,aposent:65,expectativaVida:120,perfil:'Moderado',renda:5000,investido:10000,aporte:500,aporteExtra:0,rendaPassiva:8000,previdencia:0,imoveis:0,veiculos:0,outrosBens:0,ipca:11.50,cdi:14.50,juroReal:3.0},
   hierarquia:{items:['Moradia','Alimentação','Saúde','Educação','Viagem','Lazer e Diversão','Vestuário','Família','Liberdade Financeira','Outros'],reflexoes:['','']},
   pizza:{fixas:0,estilo:0,invest:0},
   gastos:{},
@@ -721,6 +731,8 @@ function readPerfil(){
   D.perfil.perfil=el('p_perfil').value;D.perfil.renda=num('p_renda');D.perfil.investido=num('p_investido');
   D.perfil.aporte=num('p_aporte');D.perfil.aporteExtra=num('p_aporteExtra');
   D.perfil.rendaPassiva=num('p_rendaPassiva');
+  D.perfil.previdencia=num('p_previdencia');
+  D.perfil.imoveis=num('p_imoveis');D.perfil.veiculos=num('p_veiculos');D.perfil.outrosBens=num('p_outrosBens');
   D.perfil.ipca=parseFloat(el('p_ipca').value)||0;D.perfil.cdi=parseFloat(el('p_cdi').value)||0;
   D.perfil.juroReal=parseFloat(el('p_juroReal').value)||3.0;
 }
@@ -746,6 +758,9 @@ function getCalcs(){
   const juroCalcRef=cdi-ipca;
   const rentMensalCDI=Math.pow(1+cdi,1/12)-1;
   const rentMensalReal=Math.pow(1+juroReal,1/12)-1;
+  const rendaPassivaLiquida=Math.max(0,(p.rendaPassiva||0)-(p.previdencia||0));
+  const patrimonioFisico=(p.imoveis||0)+(p.veiculos||0)+(p.outrosBens||0);
+  const patrimonioTotal=(p.investido||0)+patrimonioFisico;
   // Taxas reais anuais por perfil
   const rates={
     poupanca:0.005,       // ~0.5% real (poupança mal bate inflação)
@@ -759,7 +774,7 @@ function getCalcs(){
     moderado:((juroReal*100).toFixed(1)).replace('.',',')+('% a.a. real'),
     arrojado:'6,0% a.a. real'
   };
-  return {cdi,ipca,anos,meses,anosConsumo,juroReal,juroCalcRef,rentMensalCDI,rentMensalReal,rates,ratesPctLabel};
+  return {cdi,ipca,anos,meses,anosConsumo,juroReal,juroCalcRef,rentMensalCDI,rentMensalReal,rates,ratesPctLabel,rendaPassivaLiquida,patrimonioFisico,patrimonioTotal};
 }
 function FV(r,n,pmt,pv){if(r===0)return -(pv+pmt*n);return -(pv*Math.pow(1+r,n)+pmt*(Math.pow(1+r,n)-1)/r);}
 function PMT(r,n,pv,fv){fv=fv||0;if(r===0)return -(pv+fv)/n;return -(pv*Math.pow(1+r,n)+fv)*r/(Math.pow(1+r,n)-1);}
@@ -786,11 +801,12 @@ function projectScenarios(){
         }
         colchao+=p.aporte*12+(p.aporteExtra||0);
       }else{
-        // Fase consumo: retira renda desejada mensal, carteira ainda rende
+        // Fase consumo: retira renda desejada LÍQUIDA mensal (já descontada a previdência garantida)
+        const rendaMes=Math.max(0,(p.rendaPassiva||0)-(p.previdencia||0));
         for(let m=0;m<12;m++){
-          saldo=saldo*(1+mr)-p.rendaPassiva;
+          saldo=saldo*(1+mr)-rendaMes;
         }
-        colchao-=p.rendaPassiva*12;
+        colchao-=rendaMes*12;
       }
       if(saldo<0)saldo=0;
       if(colchao<0)colchao=0;
@@ -854,6 +870,23 @@ function getCompletion(){
 function renderPerfil(){
   const c=getCalcs();
   el('p_juroCalc').value=pct(c.juroCalcRef);
+  // Resumo do patrimônio
+  const p=D.perfil;
+  const invest=p.investido||0;
+  const fisico=c.patrimonioFisico;
+  const total=c.patrimonioTotal;
+  if(total>0){
+    const pctLiq=total>0?(invest/total*100):0;
+    el('patrimonioResumo').innerHTML=`
+      <div style="padding:10px 14px;background:var(--gray-light);border-radius:var(--radius-sm);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:0.78rem">
+        <div><span style="color:var(--text-muted)">Financeiro (investido): </span><strong style="color:var(--navy)">${fmt(invest)}</strong></div>
+        <div><span style="color:var(--text-muted)">Físico: </span><strong style="color:var(--navy)">${fmt(fisico)}</strong></div>
+        <div><span style="color:var(--text-muted)">Total: </span><strong style="color:var(--gold-dark)">${fmt(total)}</strong></div>
+        <div><span style="color:var(--text-muted)">Líquido: </span><strong style="color:${pctLiq>=50?'var(--green)':'var(--red)'}">${pctLiq.toFixed(0)}%</strong></div>
+      </div>`;
+  }else{
+    el('patrimonioResumo').innerHTML='';
+  }
 }
 
 // (Hierarquia removida)
@@ -1061,7 +1094,7 @@ function renderTermometro(){
   const gastoPct=p.renda>0?gastoTotal/p.renda:1;
   const pctAporte=p.renda>0?p.aporte/p.renda:0;
   const jm=c.rentMensalReal;
-  const fireNum=jm>0?p.rendaPassiva/jm:99999999;
+  const fireNum=jm>0?c.rendaPassivaLiquida/jm:99999999;
   const firePct=fireNum>0?p.investido/fireNum:0;
   const mesesReserva=gastoTotal>0?p.investido/gastoTotal:(p.investido/(p.renda*0.7));
   const proj=projectScenarios();
@@ -1167,7 +1200,7 @@ function calcScore(){
   pts+=(gastoTotal>0&&gastoPct<=0.75?2:gastoTotal>0&&gastoPct<=0.85?1:0);
   // 7. Patrimônio já acumulado vs FIRE (0-3) — muito difícil
   const jm=c.rentMensalReal;
-  const fireNum=jm>0?p.rendaPassiva/jm:99999999;
+  const fireNum=jm>0?c.rendaPassivaLiquida/jm:99999999;
   const firePct=fireNum>0?p.investido/fireNum:0;
   pts+=(firePct>=1.0?3:firePct>=0.5?2:firePct>=0.1?1:0);
   // 8. Aporte extra anual (0-1)
@@ -1191,13 +1224,14 @@ function calcScore(){
 function renderJorginho(){
   const p=D.perfil,c=getCalcs(),jm=c.rentMensalReal;
   const expVida=p.expectativaVida||85;
-  el('jgRendaDesejada').textContent=fmt(p.rendaPassiva);
+  const rendaLiq=c.rendaPassivaLiquida;
+  el('jgRendaDesejada').textContent=fmt(rendaLiq)+(p.previdencia>0?` (líq. de ${fmt(p.previdencia)} prev.)`:'');
   el('jgJuroAnual').textContent=(c.juroReal*100).toFixed(1)+'% ao ano';
   el('jgExpVida').textContent=expVida+' anos';
   el('jgIdadeLabel').textContent=expVida;
-  const forever=jm>0?p.rendaPassiva/jm:0;
+  const forever=jm>0?rendaLiq/jm:0;
   const aConsumo=expVida-p.aposent;
-  const pvVida=(jm>0&&aConsumo>0)?-PV(jm,aConsumo*12,-p.rendaPassiva):0;
+  const pvVida=(jm>0&&aConsumo>0)?-PV(jm,aConsumo*12,-rendaLiq):0;
   el('jgForever').textContent=fmt(forever);
   el('jg100').textContent=fmt(Math.abs(pvVida));
   // Timeline visual
@@ -1216,7 +1250,7 @@ function renderJorginho(){
     <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:var(--text-muted);margin-top:3px">
       <span>Hoje (${p.idade})</span><span>Aposentadoria (${p.aposent})</span><span>Exp. vida (${expVida})</span>
     </div>`;
-  el('jgMessage').textContent=`Com ${fmt(Math.abs(pvVida))} investidos a ${(c.juroReal*100).toFixed(1)}% real, você retira ${fmt(p.rendaPassiva)}/mês por ${aConsumo} anos. Com ${fmt(forever)}, a renda dura PARA SEMPRE.`;
+  el('jgMessage').textContent=`Com ${fmt(Math.abs(pvVida))} investidos a ${(c.juroReal*100).toFixed(1)}% real, você retira ${fmt(rendaLiq)}/mês por ${aConsumo} anos. Com ${fmt(forever)}, a renda dura PARA SEMPRE.`;
 }
 
 // ═══════════════════════════════════════════════
@@ -1303,7 +1337,7 @@ function renderDashboard(){
 
   // Metrics
   const modS=proj.moderado[ai]?.saldo||0;
-  const jm=c.rentMensalReal,forever=jm>0?p.rendaPassiva/jm:0;
+  const jm=c.rentMensalReal,forever=jm>0?c.rendaPassivaLiquida/jm:0;
   const aporteIdeal=p.renda*0.25;
   el('dashMetrics').innerHTML=`
     <div class="metric-card"><div class="metric-icon">🌡️</div><div class="metric-value gold">${score}/10</div><div class="metric-label">Nota Financeira</div></div>
@@ -1318,10 +1352,12 @@ function renderDashboard(){
 
   // FIRE NUMBER + Progress bar
   const firePct=forever>0?Math.min(100,(p.investido/forever)*100):0;
+  const prevNote=p.previdencia>0?`<div style="font-size:0.68rem;color:var(--green-dark);margin-top:2px">✓ Já descontada previdência de ${fmt(p.previdencia)}/mês</div>`:'';
   el('dashFireCard').innerHTML=`
     <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">🔥 Seu Número FIRE</div>
     <div style="font-size:2rem;font-weight:800;color:var(--navy)">${fmt(forever)}</div>
-    <div style="font-size:0.72rem;color:var(--text-muted);margin:4px 0">Patrimônio necessário para ${fmt(p.rendaPassiva)}/mês para sempre</div>
+    <div style="font-size:0.72rem;color:var(--text-muted);margin:4px 0">Patrimônio necessário para ${fmt(c.rendaPassivaLiquida)}/mês para sempre</div>
+    ${prevNote}
     <div class="progress-bar" style="height:12px;margin:10px 0 6px"><div class="progress-fill ${firePct>=100?'green':'gold'}" style="width:${firePct}%"></div></div>
     <div style="display:flex;justify-content:space-between;font-size:0.7rem">
       <span style="color:var(--text-muted)">Você tem: <strong style="color:var(--navy)">${fmt(p.investido)}</strong></span>
@@ -1438,7 +1474,7 @@ function renderDashboard(){
   // Linha da Minha Vida
   const expVida=p.expectativaVida||85;
   const aConsumo=expVida-p.aposent;
-  const pvVida=(jm>0&&aConsumo>0)?-PV(jm,aConsumo*12,-p.rendaPassiva):0;
+  const pvVida=(jm>0&&aConsumo>0)?-PV(jm,aConsumo*12,-c.rendaPassivaLiquida):0;
   el('dashJorginho').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">
     <div style="padding:12px;background:var(--navy);border-radius:var(--radius-sm);text-align:center">
       <div style="font-size:0.65rem;color:var(--gold-light)">Para SEMPRE</div>
@@ -1503,12 +1539,12 @@ function renderInsights(proj,ai,c,score){
   }
   // Insight: patrimônio vs necessário para renda
   const modEndSaldo=modRow.saldo||0;
-  const necessarioForever=c.rentMensalReal>0?p.rendaPassiva/c.rentMensalReal:0;
+  const necessarioForever=c.rentMensalReal>0?c.rendaPassivaLiquida/c.rentMensalReal:0;
   if(modEndSaldo>=necessarioForever&&necessarioForever>0){
-    insights.push({icon:'🎉',text:`No cenário Moderado, seu patrimônio na aposentadoria (<strong>${fmt(modEndSaldo)}</strong>) permite renda de ${fmt(p.rendaPassiva)}/mês <strong>para sempre</strong>!`,cls:'green'});
+    insights.push({icon:'🎉',text:`No cenário Moderado, seu patrimônio na aposentadoria (<strong>${fmt(modEndSaldo)}</strong>) permite renda de ${fmt(c.rendaPassivaLiquida)}/mês <strong>para sempre</strong>!`,cls:'green'});
   }else if(modEndSaldo>0&&necessarioForever>0){
     const faltaPct=((1-modEndSaldo/necessarioForever)*100).toFixed(0);
-    insights.push({icon:'🎯',text:`Faltam <strong>${faltaPct}%</strong> do patrimônio necessário para ${fmt(p.rendaPassiva)}/mês perpétuo. Aumente o aporte ou considere o Arrojado.`,cls:''});
+    insights.push({icon:'🎯',text:`Faltam <strong>${faltaPct}%</strong> do patrimônio necessário para ${fmt(c.rendaPassivaLiquida)}/mês perpétuo. Aumente o aporte ou considere o Arrojado.`,cls:''});
   }
   // Insight: custo de investir mal
   const custoMal=(proj.arrojado[ai]?.saldo||0)-(proj.poupanca[ai]?.saldo||0);
@@ -1681,6 +1717,8 @@ function populateInputs(){
   el('p_perfil').value=p.perfil;el('p_renda').value=p.renda;el('p_investido').value=p.investido;
   el('p_aporte').value=p.aporte;el('p_aporteExtra').value=p.aporteExtra||0;
   el('p_rendaPassiva').value=p.rendaPassiva;
+  el('p_previdencia').value=p.previdencia||0;
+  el('p_imoveis').value=p.imoveis||0;el('p_veiculos').value=p.veiculos||0;el('p_outrosBens').value=p.outrosBens||0;
   el('p_ipca').value=p.ipca;el('p_cdi').value=p.cdi;
   el('p_juroReal').value=p.juroReal||3.0;
 }
