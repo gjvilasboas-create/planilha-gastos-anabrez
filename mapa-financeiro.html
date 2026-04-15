@@ -383,6 +383,138 @@ body::after{
 }
 .profile-footer strong{color:var(--navy-2);}
 
+/* ===== Profile adapt (perfil te define × perfil pra você agora) ===== */
+.profile-adapt{
+  margin-top:20px;padding:24px 22px;border-radius:var(--radius);
+  background:linear-gradient(135deg,#FFF8E7,#FFEBB8);
+  border:2px solid var(--gold);position:relative;
+  box-shadow:var(--shadow-glow);
+}
+.profile-adapt-label{
+  font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;
+  color:var(--gold-3);margin-bottom:10px;
+}
+.profile-adapt h4{
+  font-family:'Playfair Display',serif;font-weight:800;
+  font-size:1.15rem;color:var(--navy);margin-bottom:14px;line-height:1.35;
+}
+.profile-adapt-compare{
+  display:flex;align-items:center;gap:10px;margin:14px 0;flex-wrap:wrap;
+}
+.profile-adapt-chip{
+  padding:8px 14px;border-radius:10px;font-size:0.8rem;font-weight:700;
+  background:var(--bg-2);border:1.5px solid var(--border);color:var(--navy-2);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.profile-adapt-chip.you{border-color:var(--text-4);color:var(--text-4);text-decoration:line-through;opacity:0.8;}
+.profile-adapt-chip.now{
+  border-color:var(--gold-3);background:linear-gradient(135deg,var(--gold),var(--gold-2));
+  color:var(--navy);box-shadow:var(--shadow-sm);text-decoration:none;
+}
+.profile-adapt-arrow{font-size:1.3rem;color:var(--gold-3);font-weight:900;}
+.profile-adapt-text{font-size:0.93rem;color:var(--navy-2);line-height:1.6;margin-top:8px;}
+.profile-adapt-text strong{color:var(--navy);}
+
+/* ===== Diagnostic ===== */
+.diagnostic{
+  margin-top:20px;padding:24px 22px;background:var(--bg-2);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);
+}
+.diagnostic-title{
+  font-size:0.76rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--text-3);margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.diag-item{
+  display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);
+  font-size:0.92rem;color:var(--navy-2);line-height:1.55;
+}
+.diag-item:last-child{border-bottom:none;padding-bottom:0;}
+.diag-item:first-child{padding-top:0;}
+.diag-item-icon{
+  flex-shrink:0;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  font-size:1rem;font-weight:800;
+}
+.diag-item-icon.ok{background:var(--green-dim);color:var(--green);}
+.diag-item-icon.warn{background:var(--gold-dim);color:var(--gold-3);}
+.diag-item-icon.bad{background:var(--red-dim);color:var(--red);}
+.diag-item-icon.info{background:var(--blue-dim);color:var(--blue);}
+.diag-item-body strong{color:var(--navy);font-weight:800;display:block;margin-bottom:3px;}
+
+/* ===== Red flags ===== */
+.red-flags{
+  margin-top:20px;padding:22px;border-radius:var(--radius);
+  background:linear-gradient(135deg,#FDEDED,#FBE0DC);
+  border:1.5px solid rgba(192,57,43,0.35);
+}
+.red-flags-title{
+  font-size:0.88rem;font-weight:800;color:var(--red);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;letter-spacing:0.03em;
+}
+.red-flag-item{
+  display:flex;gap:12px;padding:10px 0;font-size:0.9rem;color:var(--navy-2);line-height:1.55;
+  border-bottom:1px dashed rgba(192,57,43,0.2);
+}
+.red-flag-item:last-child{border-bottom:none;padding-bottom:0;}
+.red-flag-item:first-child{padding-top:0;}
+.red-flag-icon{flex-shrink:0;font-size:1.1rem;}
+.red-flag-body strong{color:var(--red);display:block;margin-bottom:2px;font-weight:800;}
+
+/* ===== Cenário Brasil ===== */
+.scenario{
+  margin-top:20px;padding:26px 22px;border-radius:var(--radius);
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);
+  color:var(--cream);position:relative;overflow:hidden;box-shadow:var(--shadow);
+}
+.scenario::before{
+  content:'';position:absolute;top:-30%;right:-15%;width:50%;height:160%;
+  background:radial-gradient(circle,rgba(201,168,76,0.2),transparent 65%);pointer-events:none;
+}
+.scenario-flag{
+  position:absolute;top:18px;right:20px;font-size:1.4rem;opacity:0.5;
+}
+.scenario-label{
+  font-size:0.72rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--gold-2);margin-bottom:12px;position:relative;
+}
+.scenario h4{
+  font-family:'Playfair Display',serif;font-weight:800;
+  font-size:1.15rem;margin-bottom:10px;color:var(--cream);position:relative;
+}
+.scenario p{color:rgba(253,245,224,0.92);font-size:0.95rem;line-height:1.65;position:relative;}
+.scenario strong{color:var(--gold-2);}
+
+/* ===== Next steps ===== */
+.next-steps{
+  margin-top:20px;padding:24px 22px;background:var(--bg-2);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);
+}
+.next-steps-title{
+  font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--text-3);margin-bottom:16px;display:flex;align-items:center;gap:8px;
+}
+.next-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+.next-step:last-child{border-bottom:none;padding-bottom:0;}
+.next-step:first-child{padding-top:0;}
+.next-step-num{
+  flex-shrink:0;width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-3));color:var(--navy);
+  font-weight:900;font-size:0.95rem;display:grid;place-items:center;box-shadow:var(--shadow-sm);
+}
+.next-step-body{flex:1;font-size:0.92rem;color:var(--navy-2);line-height:1.55;}
+.next-step-body strong{color:var(--navy);display:block;margin-bottom:3px;font-weight:800;}
+
+/* ===== Section divider ===== */
+.profile-section-sep{
+  margin:24px 0 4px;display:flex;align-items:center;gap:12px;
+}
+.profile-section-sep::before,.profile-section-sep::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+.profile-section-sep span{
+  font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;
+  color:var(--text-3);
+}
+
 /* ===== Triangle section ===== */
 .triangle-wrap{max-width:860px;margin:0 auto;}
 .triangle-intro{
@@ -785,7 +917,7 @@ body::after{
 ========================================================= */
 const STORAGE_KEY = 'mapa-financeiro-anabrez-v1';
 const state = {
-  quiz:{ answers:Array(7).fill(null), current:0, started:false, profile:null },
+  quiz:{ answers:Array(11).fill(null), current:0, started:false, profile:null, recommended:null },
   triangle:{ x:0.5, y:0.55 }
 };
 function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
@@ -823,7 +955,9 @@ nav.addEventListener('click', e => {
    QUIZ
 ========================================================= */
 const QUESTIONS = [
+  // Bloco 1: Perfil clássico (Q1-Q7) - define o perfil base
   {
+    tag:"PERFIL",
     q:"Qual seu principal objetivo ao investir?",
     opts:[
       "Proteger meu patrimônio com o menor risco possível",
@@ -832,10 +966,12 @@ const QUESTIONS = [
     ]
   },
   {
+    tag:"PERFIL",
     q:"Por quanto tempo você pretende deixar seu dinheiro investido?",
     opts:["Até 1 ano","De 1 a 5 anos","Mais de 5 anos"]
   },
   {
+    tag:"PERFIL",
     q:"Qual sua necessidade em relação ao dinheiro investido?",
     opts:[
       "Preciso dele como complemento de renda",
@@ -844,10 +980,12 @@ const QUESTIONS = [
     ]
   },
   {
+    tag:"PERFIL",
     q:"Qual percentual da sua renda você normalmente investe?",
     opts:["Até 10%","De 10% a 20%","Acima de 20%"]
   },
   {
+    tag:"PERFIL",
     q:"Se seus investimentos perdessem 10% do valor, o que você faria?",
     opts:[
       "Tiraria todo o dinheiro imediatamente",
@@ -856,6 +994,7 @@ const QUESTIONS = [
     ]
   },
   {
+    tag:"PERFIL",
     q:"Como você descreveria sua expectativa de renda para os próximos 5 anos?",
     opts:[
       "Minha renda deve diminuir (aposentadoria, mudança, etc.)",
@@ -864,50 +1003,239 @@ const QUESTIONS = [
     ]
   },
   {
+    tag:"PERFIL",
     q:"Você pretende realizar operações de renda variável (ações, fundos, ETFs)?",
     opts:["Não","Talvez","Sim"]
+  },
+
+  // Bloco 2: Situação real (Q8-Q11) - ajusta o perfil pra sua VIDA
+  {
+    tag:"REALIDADE",
+    q:"Você já tem reserva de emergência (pelo menos 6 meses de gastos mínimos guardados)?",
+    hint:"Reserva sagrada. Não se toca. Existe pra te proteger se perder emprego ou aparecer imprevisto.",
+    opts:[
+      "Não tenho nada guardado pra emergência",
+      "Tenho parcial — menos de 6 meses",
+      "Tenho completa — 6 meses ou mais"
+    ]
+  },
+  {
+    tag:"REALIDADE",
+    q:"E além da emergência, você tem reserva de oportunidade e gordura montadas?",
+    hint:"Oportunidade = dinheiro pra comprar barato quando aparece. Gordura = conforto pra trocar a geladeira sem sofrer.",
+    opts:[
+      "Não sei o que é isso",
+      "Ouvi falar, mas ainda não montei",
+      "Sim, tenho as três reservas"
+    ]
+  },
+  {
+    tag:"REALIDADE",
+    q:"Onde está a maior parte do seu dinheiro hoje?",
+    hint:"Não precisa ser exato. Pensa no lugar onde está a maior fatia.",
+    opts:[
+      "Poupança ou conta corrente parada",
+      "Fintechs (Nubank, C6, Inter, PicPay, caixinhas)",
+      "Banco grande (Itaú, BB, Bradesco, Caixa) ou corretora"
+    ]
+  },
+  {
+    tag:"REALIDADE",
+    q:"Nos próximos 12 meses, sua vida vai passar por mudança grande?",
+    hint:"Filho, obra, troca de carreira, aposentadoria, divórcio, mudança de cidade.",
+    opts:[
+      "Sim — grande mudança a caminho",
+      "Talvez, não tenho certeza ainda",
+      "Nada grande planejado"
+    ]
   }
 ];
 
 const PROFILES = {
   conservador:{
     label:"conservador",
-    title:"Seu perfil é CONSERVADOR",
+    title:"CONSERVADORA",
     icon:"🛡️",
-    desc:"Você prioriza segurança. No Brasil atual, com a Selic alta, isso é uma vantagem — o conservador está ganhando dinheiro de verdade. Seu foco deve ser em investimentos de baixo risco e alta liquidez.",
+    desc:"Você prioriza segurança. No Brasil atual, com a Selic alta, isso é uma vantagem absurda — o conservador está ganhando dinheiro de verdade, 1,2–1,3% ao mês sentado no conforto. Seu foco deve ser baixo risco e alta liquidez.",
     alloc:{ rf:100, rv:0 },
-    quote:"Não existe vergonha em ser conservador. Existe vergonha em perder dinheiro por ser imprudente."
+    quote:"Não existe vergonha em ser conservador. Existe vergonha em perder dinheiro por ser imprudente.",
+    scenario:"<strong>Selic alta é privilégio pro conservador.</strong> Um CDB 100% do CDI de banco grande tá rendendo acima de 1% ao mês, líquido diário, protegido pelo FGC. A Ana e gente que ela respeita estão aproveitando isso agora. Não é hora de correr risco desnecessário — o conservador tá ganhando o que antes só o arrojado ganhava."
   },
   moderado:{
     label:"moderado",
-    title:"Seu perfil é MODERADO",
+    title:"MODERADA",
     icon:"⚖️",
     desc:"Você busca equilíbrio entre segurança e crescimento. Aceita um pouco de volatilidade em troca de retornos maiores. Esse é o perfil da maioria dos investidores bem-sucedidos.",
     alloc:{ rf:60, rv:40 },
-    quote:"Moderado não é indeciso. É inteligente. Você sabe dosar risco e proteção."
+    quote:"Moderado não é indeciso. É inteligente. Você sabe dosar risco e proteção.",
+    scenario:"<strong>No Brasil de 2026, moderado inteligente pesa mais a renda fixa.</strong> Com Selic alta, não faz sentido correr risco de renda variável pra ganhar o que a RF já paga. Tesouro IPCA+, CDB de prazo e LCI/LCA devem ser o grosso. Um pedaço em ETF e previdência bem escolhida completa o mix — sem se afobar."
   },
   arrojado:{
     label:"arrojado",
-    title:"Seu perfil é ARROJADO",
+    title:"ARROJADA",
     icon:"🚀",
-    desc:"Você entende que risco calculado traz mais retorno no longo prazo. Aceita volatilidade e tem horizonte de investimento mais longo. Mas atenção: arrojado sem estratégia é imprudente.",
+    desc:"Você entende que risco calculado traz mais retorno no longo prazo. Aceita volatilidade e tem horizonte mais longo. Mas atenção: arrojado sem estratégia é imprudente — e arrojado sem reservas é operação kamikaze.",
     alloc:{ rf:30, rv:70 },
-    quote:"Eu sou arrojada. Mas hoje estou moderada. Porque o investidor inteligente se adapta ao cenário."
+    quote:"Eu sou arrojada. Mas hoje estou moderada. Porque o investidor inteligente se adapta ao cenário.",
+    scenario:"<strong>Arrojado no Brasil de hoje precisa repensar.</strong> A Ana tinha 70% em renda variável — hoje tem 20%. Não virou medrosa, virou inteligente: com Selic alta, não compensa assumir risco pelo mesmo retorno. Mantenha o perfil, mas reduza a exposição de RV até o cenário mudar. Quem sobrevive é o que se adapta."
   }
 };
 
-function computeProfile(answers){
+// ===== Perfil base (Q1-Q7) =====
+function computeBaseProfile(answers){
   const counts = {1:0,2:0,3:0};
-  answers.forEach(a => { if(a) counts[a]++; });
+  for(let i=0;i<7;i++){ if(answers[i]) counts[answers[i]]++; }
   const max = Math.max(counts[1], counts[2], counts[3]);
   const winners = [1,2,3].filter(n => counts[n] === max);
   let winner;
   if(winners.length === 1){
     winner = winners[0];
   } else {
-    winner = answers[4] || winners[0]; // Q5 desempata (index 4)
+    winner = answers[4] || winners[0]; // Q5 desempata
   }
   return winner === 1 ? 'conservador' : winner === 2 ? 'moderado' : 'arrojado';
+}
+
+// ===== Perfil recomendado (ajusta pela situação real Q8-Q11) =====
+// Regras do "investidor inteligente" da Ana:
+// - Sem reserva de emergência = OBRIGATORIAMENTE conservador
+// - Reserva parcial sem as outras duas = conservador (precisa montar colchão)
+// - Mudança grande de vida + arrojado = capa em moderado
+function computeRecommendedProfile(base, answers){
+  const q8 = answers[7];   // reserva emergência
+  const q9 = answers[8];   // reserva oportunidade + gordura
+  const q11 = answers[10]; // mudança de vida
+
+  // Sem nenhuma reserva → conservador forçado
+  if(q8 === 1) return 'conservador';
+  // Reserva parcial sem as outras duas + não é já conservador
+  if(q8 === 2 && q9 <= 2 && base !== 'conservador') return 'conservador';
+  // Mudança grande chegando + arrojado → moderado
+  if(q11 === 1 && base === 'arrojado') return 'moderado';
+  // Mudança grande chegando + sem as 3 reservas + moderado → conservador
+  if(q11 === 1 && q9 <= 2 && base === 'moderado') return 'conservador';
+
+  return base;
+}
+
+// ===== Análise completa (diagnóstico, red flags, próximos passos) =====
+function analyzeProfile(answers, base, recommended){
+  const q1=answers[0], q2=answers[1], q3=answers[2], q4=answers[3],
+        q5=answers[4], q6=answers[5], q7=answers[6],
+        q8=answers[7], q9=answers[8], q10=answers[9], q11=answers[10];
+
+  const diag = [];
+  const flags = [];
+  const steps = [];
+
+  // ----- DIAGNÓSTICO -----
+  // Reservas
+  if(q8 === 3 && q9 === 3){
+    diag.push({ icon:'✓', tone:'ok', title:'Suas 3 reservas estão montadas',
+      text:'Você tá entre os 1% que tem essa base. Pode pensar em crescimento real sem medo. É o lugar onde começa a consultoria de verdade.' });
+  } else if(q8 === 3 && q9 <= 2){
+    diag.push({ icon:'!', tone:'warn', title:'Emergência ok, faltam as outras duas',
+      text:'Você já deu o passo mais difícil (reserva de emergência). Agora monta reserva de oportunidade e gordura — sem elas, qualquer imprevisto ou oportunidade vira crise.' });
+  } else if(q8 === 2){
+    diag.push({ icon:'!', tone:'warn', title:'Reserva de emergência incompleta',
+      text:'Você começou, mas não terminou. Antes de pensar em investimentos de crescimento, foque em completar os 6 meses de gastos mínimos guardados em CDB de liquidez diária.' });
+  } else {
+    diag.push({ icon:'✕', tone:'bad', title:'Sem reserva de emergência — prioridade máxima',
+      text:'Independente do que o teste disse, hoje você precisa ser conservadora até montar sua reserva. Um imprevisto sem colchão vira dívida, dívida vira atraso, atraso destrói sua vida financeira.' });
+  }
+
+  // Onde tá o dinheiro
+  if(q10 === 1){
+    diag.push({ icon:'✕', tone:'bad', title:'Dinheiro parado em poupança/conta',
+      text:'Poupança rende menos que a inflação real. Você tá perdendo poder de compra todo mês sem perceber. Migre urgente pra CDB de liquidez diária de banco grande — mesma segurança, muito mais rendimento.' });
+  } else if(q10 === 2){
+    diag.push({ icon:'!', tone:'warn', title:'Dinheiro sério em fintech',
+      text:'Fintech é ótima pra Pix e dia a dia. Mas o Banco Central é menos exigente com elas que com bancos grandes — elas podem se arriscar mais pra pagar 120%, 150% do CDI. Dinheiro sério não fica ali.' });
+  } else {
+    diag.push({ icon:'✓', tone:'ok', title:'Dinheiro em instituição sólida',
+      text:'Bom. Continue com conta em banco grande pra reserva e relacionamento bancário. Use fintech só pra operação do dia a dia.' });
+  }
+
+  // % da renda investida
+  if(q4 === 1){
+    diag.push({ icon:'!', tone:'warn', title:'Aporte mensal abaixo do ideal',
+      text:'O padrão saudável é 25% da renda pra investimentos. Você tá abaixo disso. Talvez tenha ralos ocultos no orçamento — revise com a Planilha de Gastos pra identificar.' });
+  } else if(q4 === 3){
+    diag.push({ icon:'✓', tone:'ok', title:'Você guarda muito bem',
+      text:'Acima de 20% da renda é taxa de elite. Isso é o que separa quem se aposenta bem de quem chega aos 60 sem nada. Continue firme.' });
+  }
+
+  // Mudança de vida + reação
+  if(q11 === 1){
+    diag.push({ icon:'i', tone:'info', title:'Mudança grande vindo pela frente',
+      text:'Quem sobrevive não é o mais forte — é o que se adapta. Com uma mudança grande chegando, é hora de reduzir risco, aumentar liquidez e engordar a reserva. Seu perfil de vida mudou, sua carteira muda junto.' });
+  }
+
+  // Reação a queda de 10%
+  if(q5 === 1){
+    diag.push({ icon:'!', tone:'warn', title:'Você reage no impulso em queda',
+      text:'Tirar tudo na queda é o comportamento que mais destrói patrimônio. Não é culpa sua — é o cérebro reagindo. Por isso você precisa de uma carteira bem montada ANTES do susto: quando a onda vier, você tá preparada.' });
+  }
+
+  // Expectativa de renda subir
+  if(q6 === 3){
+    diag.push({ icon:'✓', tone:'ok', title:'Sua renda deve crescer',
+      text:'Você tá no ciclo de construção. Cada R$ 1 que você guarda e investe bem vira R$ 6 ao longo da vida — essa é a força dos juros compostos. Acelere os aportes enquanto tá na fase boa.' });
+  } else if(q6 === 1){
+    diag.push({ icon:'i', tone:'info', title:'Renda deve diminuir (aposentadoria/transição)',
+      text:'Seu horizonte pede preservação do que você já construiu, não crescimento agressivo. Foque em renda fixa, proteção contra inflação (IPCA+) e liquidez — sem heroísmo.' });
+  }
+
+  // ----- RED FLAGS -----
+  if(q8 === 1 && (base === 'arrojado' || q7 === 3)){
+    flags.push({ icon:'🚨', title:'OPERAÇÃO KAMIKAZE detectada',
+      text:'Você quer renda variável / aceita risco alto — mas não tem reserva. A Ana chama isso de operação kamikaze: é tudo certo pra dar errado. Monte as reservas ANTES de comprar qualquer ação.' });
+  }
+  if(q10 === 2 && q8 >= 2){
+    flags.push({ icon:'⚠️', title:'Reserva em fintech = risco disfarçado',
+      text:'O FGC tá com rombo de quase metade. Bank Master é exemplo recente. Reserva de emergência precisa estar em banco grande — não em caixinha turbo de fintech que paga 120% do CDI porque o risco é maior.' });
+  }
+  if(q10 === 1){
+    flags.push({ icon:'🚨', title:'Poupança é perda silenciosa',
+      text:'Poupança rendeu em 2025 menos que a inflação. Cada mês ali é dinheiro perdendo valor. Migração pra CDB de liquidez diária 100% CDI é ação imediata.' });
+  }
+  if(q4 === 1 && q6 === 3){
+    flags.push({ icon:'⚠️', title:'Renda subindo, aporte baixo',
+      text:'Sua renda deve crescer, mas você investe pouco. Cuidado com o efeito "inchei o padrão de vida": renda nova não pode virar gasto fixo novo — tem que virar aporte.' });
+  }
+
+  // ----- PRÓXIMOS PASSOS (3-4 acionáveis) -----
+  if(q8 <= 2){
+    steps.push({ title:'Monte sua reserva de emergência',
+      text:'6 meses de gastos MÍNIMOS (pior cenário × 6) em CDB de liquidez diária de banco grande. Essa é a regra sagrada — sem ela, nada mais.' });
+  }
+  if(q10 === 1){
+    steps.push({ title:'Tire o dinheiro da poupança',
+      text:'Abra CDB de liquidez diária 100% do CDI no seu banco grande. Mesma segurança, rendimento 3–4× maior. Faz hoje.' });
+  } else if(q10 === 2 && q8 >= 2){
+    steps.push({ title:'Migre a reserva pra banco grande',
+      text:'Itaú, BB, Bradesco, Caixa ou Santander. Sem tarifa (é seu direito por lei). Reserva séria fica ali, não em caixinha de fintech.' });
+  }
+  if(q8 === 3 && q9 <= 2){
+    steps.push({ title:'Monte reserva de oportunidade + gordura',
+      text:'Oportunidade = 50% da emergência, pra comprar barato quando aparecer. Gordura = 1-2× seu padrão mensal, pra viver sem apertar.' });
+  }
+  if(q4 === 1){
+    steps.push({ title:'Revise seus gastos',
+      text:'Use a Planilha de Gastos Ana Brez pra achar o ralo oculto. A meta é chegar em 25% da renda pra investimentos.' });
+  }
+  if(recommended !== base){
+    steps.push({ title:'Adote o perfil adequado pro seu momento',
+      text:'Seu perfil natural é um, mas seu momento de vida pede outro. Não é sobre ser mais ou menos corajosa — é sobre ser inteligente.' });
+  }
+  // Sempre incluir
+  steps.push({ title:'Continue no Mapa Financeiro',
+      text:'As próximas seções (Reservas, Blocos, Distribuição) vão desdobrar exatamente o seu mapa. Domingo tem a Aula 4 — não perde.' });
+
+  // Limita a 4 passos
+  const topSteps = steps.slice(0, 4);
+
+  return { diag, flags, steps: topSteps };
 }
 
 function renderQuestion(){
@@ -920,10 +1248,12 @@ function renderQuestion(){
   document.getElementById('quizProgressFill').style.width = ((idx+1)/QUESTIONS.length*100) + '%';
   document.getElementById('quizProgressText').textContent = `${idx+1} de ${QUESTIONS.length}`;
 
+  const tagLabel = q.tag === 'REALIDADE' ? 'Sobre sua situação' : 'Sobre seu perfil';
   qEl.innerHTML = `
     <div class="quiz-question">
-      <span class="quiz-q-num">Pergunta ${idx+1}</span>
+      <span class="quiz-q-num">${tagLabel} · ${idx+1}/${QUESTIONS.length}</span>
       <div class="quiz-q-text">${q.q}</div>
+      ${q.hint ? `<div style="font-size:0.82rem;color:var(--text-3);margin:-12px 0 16px;line-height:1.5;"><em>${q.hint}</em></div>` : ''}
       <div class="quiz-options">
         ${q.opts.map((opt,i)=>`
           <button class="quiz-opt ${selected===(i+1)?'selected':''}" data-val="${i+1}">
@@ -935,7 +1265,7 @@ function renderQuestion(){
       <div class="quiz-nav">
         <button class="quiz-btn quiz-btn-ghost" id="btnPrev" ${idx===0?'style="visibility:hidden;"':''}>← Voltar</button>
         <button class="quiz-btn quiz-btn-primary" id="btnNext" ${selected==null?'disabled':''}>
-          ${idx===QUESTIONS.length-1 ? 'Ver resultado ✨' : 'Próxima →'}
+          ${idx===QUESTIONS.length-1 ? 'Ver análise completa ✨' : 'Próxima →'}
         </button>
       </div>
     </div>
@@ -957,7 +1287,10 @@ function renderQuestion(){
   if(btnNext) btnNext.addEventListener('click', () => {
     if(state.quiz.answers[idx] == null) return;
     if(idx === QUESTIONS.length - 1){
-      state.quiz.profile = computeProfile(state.quiz.answers);
+      const base = computeBaseProfile(state.quiz.answers);
+      const recommended = computeRecommendedProfile(base, state.quiz.answers);
+      state.quiz.profile = base;
+      state.quiz.recommended = recommended;
       save();
       renderResult();
     } else {
@@ -969,27 +1302,89 @@ function renderQuestion(){
 }
 
 function renderResult(){
-  const p = PROFILES[state.quiz.profile];
+  const base = state.quiz.profile;
+  const recommended = state.quiz.recommended || base;
+  const p = PROFILES[base];
+  const pRec = PROFILES[recommended];
+  const adapted = recommended !== base;
+
+  const analysis = analyzeProfile(state.quiz.answers, base, recommended);
+
   const qEl = document.getElementById('quizQuestions');
   const resEl = document.getElementById('quizResult');
 
   document.getElementById('quizProgress').style.display = 'none';
   qEl.innerHTML = '';
   resEl.style.display = 'block';
+
+  const toneIcon = { ok:'✓', warn:'!', bad:'✕', info:'i' };
+
+  const diagHtml = analysis.diag.map(d => `
+    <div class="diag-item">
+      <div class="diag-item-icon ${d.tone}">${toneIcon[d.tone]}</div>
+      <div class="diag-item-body"><strong>${d.title}</strong>${d.text}</div>
+    </div>
+  `).join('');
+
+  const flagsHtml = analysis.flags.length ? `
+    <div class="red-flags">
+      <div class="red-flags-title">🚨 Pontos de atenção no seu caso</div>
+      ${analysis.flags.map(f => `
+        <div class="red-flag-item">
+          <div class="red-flag-icon">${f.icon}</div>
+          <div class="red-flag-body"><strong>${f.title}</strong>${f.text}</div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
+
+  const stepsHtml = `
+    <div class="next-steps">
+      <div class="next-steps-title">🎯 Seus próximos passos</div>
+      ${analysis.steps.map((s,i) => `
+        <div class="next-step">
+          <div class="next-step-num">${i+1}</div>
+          <div class="next-step-body"><strong>${s.title}</strong>${s.text}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  const adaptHtml = adapted ? `
+    <div class="profile-adapt">
+      <div class="profile-adapt-label">⚖️ Perfil do investidor inteligente</div>
+      <h4>Seu perfil te define — mas seu momento de vida pede adaptação</h4>
+      <div class="profile-adapt-compare">
+        <span class="profile-adapt-chip you">${p.icon} ${p.title}</span>
+        <span class="profile-adapt-arrow">→</span>
+        <span class="profile-adapt-chip now">${pRec.icon} ${pRec.title} <small style="font-weight:600;opacity:0.8;">(hoje)</small></span>
+      </div>
+      <div class="profile-adapt-text">
+        Seu perfil natural é <strong>${p.title.toLowerCase()}</strong>, mas pela sua situação atual (reservas, onde seu dinheiro está, mudanças de vida), o perfil adequado <strong>pra você agora</strong> é <strong>${pRec.title.toLowerCase()}</strong>. Isso não é rebaixamento — é inteligência. <em>"Eu sou arrojada. Mas hoje estou moderada. Porque o investidor inteligente se adapta ao cenário."</em>
+      </div>
+    </div>
+  ` : '';
+
+  const activeProfile = adapted ? pRec : p;
+
   resEl.innerHTML = `
     <div class="profile-result">
       <div class="profile-hero ${p.label}">
         <div class="profile-icon">${p.icon}</div>
         <div class="profile-label">Resultado do teste</div>
-        <h2 class="profile-title ${p.label}">${p.title}</h2>
+        <h2 class="profile-title ${p.label}">Seu perfil é ${p.title}</h2>
         <p class="profile-desc">${p.desc}</p>
       </div>
 
+      ${adaptHtml}
+
+      <div class="profile-section-sep"><span>Sua distribuição ideal agora</span></div>
+
       <div class="profile-alloc">
-        <div class="profile-alloc-title">Distribuição sugerida da carteira</div>
+        <div class="profile-alloc-title">Distribuição sugerida da carteira${adapted ? ` (perfil ${pRec.label})` : ''}</div>
         <div class="alloc-bar">
-          ${p.alloc.rf > 0 ? `<div class="alloc-seg alloc-seg-rf" style="width:${p.alloc.rf}%;">${p.alloc.rf}% Renda Fixa</div>` : ''}
-          ${p.alloc.rv > 0 ? `<div class="alloc-seg alloc-seg-rv" style="width:${p.alloc.rv}%;">${p.alloc.rv}% Renda Variável</div>` : ''}
+          ${activeProfile.alloc.rf > 0 ? `<div class="alloc-seg alloc-seg-rf" style="width:${activeProfile.alloc.rf}%;">${activeProfile.alloc.rf}% Renda Fixa</div>` : ''}
+          ${activeProfile.alloc.rv > 0 ? `<div class="alloc-seg alloc-seg-rv" style="width:${activeProfile.alloc.rv}%;">${activeProfile.alloc.rv}% Renda Variável</div>` : ''}
         </div>
         <div class="alloc-legend">
           <span class="alloc-legend-item"><span class="alloc-dot rf"></span>Renda Fixa (baixo risco)</span>
@@ -997,21 +1392,43 @@ function renderResult(){
         </div>
       </div>
 
+      <div class="profile-section-sep"><span>Diagnóstico personalizado</span></div>
+
+      <div class="diagnostic">
+        <div class="diagnostic-title">🩺 Leitura da sua situação</div>
+        ${diagHtml}
+      </div>
+
+      ${flagsHtml}
+
+      <div class="profile-section-sep"><span>Cenário Brasil 2026 pra você</span></div>
+
+      <div class="scenario">
+        <div class="scenario-flag">🇧🇷</div>
+        <div class="scenario-label">Como o cenário atual impacta seu perfil</div>
+        <h4>Selic alta muda o jogo</h4>
+        <p>${activeProfile.scenario}</p>
+      </div>
+
+      ${stepsHtml}
+
+      <div class="profile-section-sep"><span>Frase da Ana</span></div>
+
       <div class="profile-quote">
-        <p>${p.quote}</p>
+        <p>${activeProfile.quote}</p>
         <cite>— Ana Brez</cite>
       </div>
 
       <div class="profile-warn">
-        <div class="profile-warn-title">⚠️ ATENÇÃO (vale pra todo mundo)</div>
+        <div class="profile-warn-title">⚠️ A regra que vale pra todo mundo</div>
         <div class="profile-warn-text">
-          Se você ainda <strong>não tem reserva de emergência, reserva de oportunidade e gordura montados</strong> — independente do resultado deste teste, você deve ser CONSERVADORA até montar esse colchão. Sem exceção.
+          Enquanto você <strong>não tiver reserva de emergência, reserva de oportunidade e gordura montados</strong>, você é obrigatoriamente <strong>conservadora</strong> — independente do que esse teste disse. Essa é a regra da Ana e não tem exceção. Antes de correr atrás de retorno, monte o colchão.
         </div>
       </div>
 
       <div class="profile-actions">
         <button class="quiz-btn quiz-btn-primary" id="btnGoReservas">
-          Descobrir quanto preciso em cada reserva →
+          Calcular minhas 3 reservas →
         </button>
         <button class="quiz-btn quiz-btn-navy" id="btnShareResult">
           💬 Compartilhar no WhatsApp
@@ -1031,10 +1448,10 @@ function renderResult(){
     showToast('🔒 Seção libera na Aula 4');
   });
   document.getElementById('btnShareResult').addEventListener('click', () => {
-    shareProfile(p);
+    shareProfile(activeProfile);
   });
   document.getElementById('btnRedoQuiz').addEventListener('click', () => {
-    state.quiz = { answers:Array(7).fill(null), current:0, started:true, profile:null };
+    state.quiz = { answers:Array(11).fill(null), current:0, started:true, profile:null, recommended:null };
     save();
     resEl.style.display = 'none';
     renderQuestion();
@@ -1164,7 +1581,7 @@ document.getElementById('exampleGrid').innerHTML = EXAMPLES.map(ex => `
 function buildShareText(profile){
   const url = location.href.split('#')[0];
   if(profile){
-    return `Fiz meu teste de perfil de investidor no Mapa Financeiro da Ana Brez. Meu resultado: ${profile.title.toUpperCase()}. Faz o seu tambem: ${url}`;
+    return `Fiz o teste de perfil de investidor no Mapa Financeiro da Ana Brez. Meu perfil: ${profile.title}. Recebi diagnóstico e próximos passos personalizados. Faz o seu tambem: ${url}`;
   }
   return `Tô fazendo o Mapa Financeiro gratuito da Ana Brez pra organizar minha vida financeira. Faz tambem: ${url}`;
 }
