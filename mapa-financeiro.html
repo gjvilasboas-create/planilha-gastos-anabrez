@@ -360,13 +360,13 @@ body::after{
 }
 
 .profile-warn{
-  margin-top:18px;padding:20px 22px;border-radius:var(--radius);
-  background:linear-gradient(135deg,#FDEDED,#FBE0DC);
-  border:1.5px solid rgba(192,57,43,0.3);
+  margin-top:18px;padding:22px 22px;border-radius:var(--radius);
+  background:linear-gradient(135deg,var(--peach-light),var(--peach));
+  border:1.5px solid var(--terracota);
 }
 .profile-warn-title{
-  font-size:0.82rem;font-weight:800;color:var(--red);margin-bottom:8px;
-  display:flex;align-items:center;gap:8px;letter-spacing:0.04em;
+  font-size:0.85rem;font-weight:800;color:var(--terracota);margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;letter-spacing:0.02em;
 }
 .profile-warn-text{font-size:0.9rem;color:var(--navy-2);line-height:1.6;}
 .profile-warn-text strong{color:var(--navy);}
@@ -440,24 +440,24 @@ body::after{
 .diag-item-icon.info{background:var(--blue-dim);color:var(--blue);}
 .diag-item-body strong{color:var(--navy);font-weight:800;display:block;margin-bottom:3px;}
 
-/* ===== Red flags ===== */
+/* ===== Pontos de atenção (tom aconselhador) ===== */
 .red-flags{
   margin-top:20px;padding:22px;border-radius:var(--radius);
-  background:linear-gradient(135deg,#FDEDED,#FBE0DC);
-  border:1.5px solid rgba(192,57,43,0.35);
+  background:linear-gradient(135deg,var(--gold-bg),#FFF3D6);
+  border:1.5px solid var(--gold-border);
 }
 .red-flags-title{
-  font-size:0.88rem;font-weight:800;color:var(--red);margin-bottom:12px;
-  display:flex;align-items:center;gap:8px;letter-spacing:0.03em;
+  font-size:0.88rem;font-weight:800;color:var(--gold-3);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;letter-spacing:0.02em;
 }
 .red-flag-item{
-  display:flex;gap:12px;padding:10px 0;font-size:0.9rem;color:var(--navy-2);line-height:1.55;
-  border-bottom:1px dashed rgba(192,57,43,0.2);
+  display:flex;gap:12px;padding:12px 0;font-size:0.9rem;color:var(--navy-2);line-height:1.6;
+  border-bottom:1px dashed rgba(201,168,76,0.3);
 }
 .red-flag-item:last-child{border-bottom:none;padding-bottom:0;}
 .red-flag-item:first-child{padding-top:0;}
 .red-flag-icon{flex-shrink:0;font-size:1.1rem;}
-.red-flag-body strong{color:var(--red);display:block;margin-bottom:2px;font-weight:800;}
+.red-flag-body strong{color:var(--navy);display:block;margin-bottom:3px;font-weight:800;}
 
 /* ===== Cenário Brasil ===== */
 .scenario{
@@ -514,6 +514,32 @@ body::after{
   font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;
   color:var(--text-3);
 }
+
+/* ===== Disclaimer CVM ===== */
+.cvm-bar{
+  margin:14px auto 0;max-width:1200px;padding:10px 20px;
+  font-size:0.72rem;color:var(--text-3);text-align:center;line-height:1.5;
+  border-top:1px dashed var(--border);
+}
+.cvm-bar strong{color:var(--navy-2);}
+.cvm-inline{
+  display:block;margin-top:10px;padding:10px 12px;border-radius:8px;
+  background:var(--peach-light);border:1px dashed var(--border-2);
+  font-size:0.72rem;color:var(--text-3);line-height:1.5;text-align:center;
+}
+.cvm-inline strong{color:var(--navy-2);font-weight:700;}
+.cvm-chip{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;
+  background:var(--bg-2);border:1px solid var(--border);border-radius:20px;
+  font-size:0.68rem;font-weight:600;color:var(--text-3);letter-spacing:0.01em;
+}
+.cvm-chip::before{content:'📌';font-size:0.7rem;}
+.footer-cvm{
+  margin-top:12px;padding:14px 16px;border-radius:10px;
+  background:var(--bg-2);border:1px solid var(--border);
+  font-size:0.74rem;color:var(--text-3);line-height:1.6;text-align:left;
+}
+.footer-cvm strong{color:var(--navy-2);}
 
 /* ===== Triangle section ===== */
 .triangle-wrap{max-width:860px;margin:0 auto;}
@@ -736,7 +762,8 @@ body::after{
     <div class="section-hero">
       <span class="section-hero-label">Passo 1 de 6</span>
       <h2>Descubra seu perfil de investidor</h2>
-      <p>7 perguntas rápidas. No final você recebe uma análise personalizada e descobre onde seu dinheiro deveria estar. Os dados ficam no seu celular.</p>
+      <p>11 perguntas rápidas. No final você recebe uma leitura personalizada do seu momento financeiro. Os dados ficam no seu celular.</p>
+      <div style="margin-top:14px;"><span class="cvm-chip">Conteúdo educacional · Não é recomendação de investimento</span></div>
     </div>
 
     <div class="quiz-wrap" id="quizWrap">
@@ -774,6 +801,7 @@ body::after{
       <span class="section-hero-label">Passo 2 de 6</span>
       <h2>Risco × Retorno × Liquidez</h2>
       <p>A regra mais importante de todo investimento cabe num triângulo. Os três nunca andam juntos. Entenda arrastando a bolinha.</p>
+      <div style="margin-top:14px;"><span class="cvm-chip">Conteúdo educacional · Não é recomendação de investimento</span></div>
     </div>
 
     <div class="triangle-wrap">
@@ -821,8 +849,9 @@ body::after{
       </div>
 
       <div class="triangle-examples">
-        <div class="triangle-examples-title">Exemplos reais de investimentos</div>
+        <div class="triangle-examples-title">Exemplos didáticos de investimentos</div>
         <div class="example-grid" id="exampleGrid"></div>
+        <div class="cvm-inline" style="margin-top:12px;"><strong>Exemplos para fins educacionais.</strong> As classificações ilustram o conceito de risco × retorno × liquidez. Não são recomendações de compra nem análise individualizada de ativos.</div>
       </div>
 
       <div class="anchor-quote">
@@ -904,8 +933,12 @@ body::after{
 <!-- ===== FOOTER ===== -->
 <footer class="footer">
   <div class="footer-privacy">🔒 Seus dados ficam só no seu aparelho</div>
-  <div>Esta plataforma é educacional e não constitui recomendação de investimentos.</div>
-  <div style="margin-top:6px;">Desenvolvido por <strong style="color:var(--navy-2);">GC Marketing</strong> · Ana Brez &copy; 2026</div>
+
+  <div class="footer-cvm" style="max-width:720px;margin:14px auto 0;">
+    <strong>📌 Aviso legal (CVM).</strong> Todo o conteúdo desta plataforma — teste de perfil, análises, exemplos de investimento, cenário econômico e comentários — é <strong>estritamente educacional</strong> e reflete estudos e opiniões pessoais da Ana Brez. <strong>Nada aqui configura recomendação, indicação ou oferta de produtos financeiros</strong>, nos termos da Resolução CVM 20/2021 e demais normativos. Decisões de investimento devem ser tomadas com apoio de profissional habilitado (assessor registrado na CVM, analista certificado ou consultor autorizado). Resultados passados não garantem resultados futuros. Todo investimento envolve risco.
+  </div>
+
+  <div style="margin-top:14px;">Desenvolvido por <strong style="color:var(--navy-2);">GC Marketing</strong> · Ana Brez &copy; 2026</div>
 </footer>
 
 <!-- ===== TOAST ===== -->
@@ -1056,28 +1089,28 @@ const PROFILES = {
     label:"conservador",
     title:"CONSERVADOR",
     icon:"🛡️",
-    desc:"Você prioriza segurança. No Brasil atual, com a Selic alta, isso é uma vantagem absurda — o conservador está ganhando dinheiro de verdade, 1,2–1,3% ao mês sentado no conforto. Seu foco deve ser baixo risco e alta liquidez.",
+    desc:"Você prioriza segurança, e isso tem muito valor. No Brasil de hoje, com a Selic alta, o conservador está ganhando bem — cerca de 1,2 a 1,3% ao mês com baixo risco e liquidez. É um bom momento pra esse perfil.",
     alloc:{ rf:100, rv:0 },
     quote:"Não existe vergonha em ser conservador. Existe vergonha em perder dinheiro por ser imprudente.",
-    scenario:"<strong>Selic alta é privilégio pro conservador.</strong> Um CDB 100% do CDI de banco grande tá rendendo acima de 1% ao mês, líquido diário, protegido pelo FGC. A Ana e gente que ela respeita estão aproveitando isso agora. Não é hora de correr risco desnecessário — o conservador tá ganhando o que antes só o agressivo ganhava."
+    scenario:"<strong>Selic alta joga a favor do conservador.</strong> Um CDB 100% do CDI de banco grande tem rendido acima de 1% ao mês, com liquidez diária e proteção do FGC. A Ana e gente do mercado que ela respeita estão aproveitando esse momento. O conservador hoje está ganhando o que antes só o perfil agressivo colhia — e com muito menos sobressalto."
   },
   moderado:{
     label:"moderado",
     title:"MODERADO",
     icon:"⚖️",
-    desc:"Você busca equilíbrio entre segurança e crescimento. Aceita um pouco de volatilidade em troca de retornos maiores. Esse é o perfil da maioria dos investidores bem-sucedidos.",
+    desc:"Você busca equilíbrio entre segurança e crescimento. Aceita um pouco de volatilidade em troca de retornos maiores. Esse costuma ser o perfil da maioria dos investidores que chegam bem no longo prazo.",
     alloc:{ rf:60, rv:40 },
     quote:"Moderado não é indeciso. É inteligente. Você sabe dosar risco e proteção.",
-    scenario:"<strong>No Brasil de 2026, o moderado inteligente pesa mais a renda fixa.</strong> Com Selic alta, não faz sentido correr risco de renda variável pra ganhar o que a RF já paga. Tesouro IPCA+, CDB de prazo e LCI/LCA devem ser o grosso. Um pedaço em ETF e previdência bem escolhida completa o mix — sem se afobar."
+    scenario:"<strong>No Brasil de 2026, faz sentido o moderado pesar um pouco mais na renda fixa.</strong> Com a Selic alta, a RF está pagando bem — e assumir risco de renda variável pra alcançar o mesmo retorno pode não compensar no momento. Tesouro IPCA+, CDB de prazo e LCI/LCA costumam ser boas opções. Um pedaço em ETF e previdência bem escolhida complementa bem o mix."
   },
   agressivo:{
     label:"agressivo",
     title:"AGRESSIVO",
     icon:"🚀",
-    desc:"Você entende que risco calculado traz mais retorno no longo prazo. Aceita volatilidade e tem horizonte mais longo. Mas atenção: agressivo sem estratégia é imprudente — e agressivo sem reservas é operação kamikaze.",
+    desc:"Você entende que risco calculado tende a trazer mais retorno no longo prazo, aceita volatilidade e tem horizonte maior. Um ponto importante pra ter em mente: perfil agressivo sem reservas montadas deixa a carteira muito exposta — vale cuidar dessa base primeiro.",
     alloc:{ rf:30, rv:70 },
     quote:"Eu sou agressiva. Mas hoje estou moderada. Porque o investidor inteligente se adapta ao cenário.",
-    scenario:"<strong>O agressivo no Brasil de hoje precisa repensar.</strong> A Ana tinha 70% em renda variável — hoje tem 20%. Não virou medrosa, virou inteligente: com Selic alta, não compensa assumir risco pelo mesmo retorno. Mantenha o perfil, mas reduza a exposição de RV até o cenário mudar. Quem sobrevive é o que se adapta."
+    scenario:"<strong>O agressivo tem um bom convite pra repensar no momento.</strong> A Ana, que é agressiva, tinha 70% em renda variável e hoje está em 20% — não por medo, por leitura de cenário. Com Selic alta, o prêmio de risco diminuiu. Mantenha o perfil, mas pode fazer sentido reduzir a exposição de RV enquanto o cenário estiver assim. Quem sobrevive é quem se adapta."
   }
 };
 
@@ -1131,106 +1164,106 @@ function analyzeProfile(answers, base, recommended){
   // ----- DIAGNÓSTICO -----
   // Reservas
   if(q8 === 3 && q9 === 3){
-    diag.push({ icon:'✓', tone:'ok', title:'Suas 3 reservas estão montadas',
-      text:'Você tá entre os 1% que tem essa base. Pode pensar em crescimento real sem medo. É o lugar onde começa a consultoria de verdade.' });
+    diag.push({ icon:'✓', tone:'ok', title:'Suas 3 reservas já estão montadas',
+      text:'Isso é coisa de pouca gente — menos de 1% dos brasileiros tem essa base. A partir daqui o jogo muda: dá pra pensar em crescimento de verdade, porque o colchão já existe.' });
   } else if(q8 === 3 && q9 <= 2){
-    diag.push({ icon:'!', tone:'warn', title:'Emergência ok, faltam as outras duas',
-      text:'Você já deu o passo mais difícil (reserva de emergência). Agora monta reserva de oportunidade e gordura — sem elas, qualquer imprevisto ou oportunidade vira crise.' });
+    diag.push({ icon:'!', tone:'warn', title:'Emergência ok. Vale cuidar das outras duas',
+      text:'O passo mais difícil você já deu. Agora faz sentido olhar pra reserva de oportunidade e gordura — elas são o que separa "ter dinheiro guardado" de "ter tranquilidade financeira".' });
   } else if(q8 === 2){
-    diag.push({ icon:'!', tone:'warn', title:'Reserva de emergência incompleta',
-      text:'Você começou, mas não terminou. Antes de pensar em investimentos de crescimento, foque em completar os 6 meses de gastos mínimos guardados em CDB de liquidez diária.' });
+    diag.push({ icon:'!', tone:'warn', title:'Reserva de emergência em construção',
+      text:'Você começou — ótimo. Faz muito sentido priorizar completar os 6 meses de gastos mínimos antes de avançar pra investimentos de crescimento. É o que protege tudo o que vier depois.' });
   } else {
-    diag.push({ icon:'✕', tone:'bad', title:'Sem reserva de emergência — prioridade máxima',
-      text:'Independente do que o teste disse, hoje você precisa ser conservador até montar sua reserva. Um imprevisto sem colchão vira dívida, dívida vira atraso, atraso destrói sua vida financeira.' });
+    diag.push({ icon:'✕', tone:'bad', title:'Ainda sem reserva de emergência',
+      text:'Esse é o ponto de partida que transforma a vida financeira. Até a reserva estar montada, o perfil conservador é o que faz mais sentido — não é limitação, é construir a base sem a qual o resto fica vulnerável.' });
   }
 
   // Onde tá o dinheiro
   if(q10 === 1){
-    diag.push({ icon:'✕', tone:'bad', title:'Dinheiro parado em poupança/conta',
-      text:'Poupança rende menos que a inflação real. Você tá perdendo poder de compra todo mês sem perceber. Migre urgente pra CDB de liquidez diária de banco grande — mesma segurança, muito mais rendimento.' });
+    diag.push({ icon:'!', tone:'warn', title:'Dinheiro parado na poupança',
+      text:'A poupança costuma render menos que a inflação real — ou seja, o dinheiro vai perdendo poder de compra com o tempo. Um CDB de liquidez diária de banco grande oferece a mesma segurança, com rendimento bem maior. Vale considerar a troca.' });
   } else if(q10 === 2){
-    diag.push({ icon:'!', tone:'warn', title:'Dinheiro sério em fintech',
-      text:'Fintech é ótima pra Pix e dia a dia. Mas o Banco Central é menos exigente com elas que com bancos grandes — elas podem se arriscar mais pra pagar 120%, 150% do CDI. Dinheiro sério não fica ali.' });
+    diag.push({ icon:'i', tone:'info', title:'Dinheiro sério em fintech',
+      text:'Fintech cumpre muito bem o papel do dia a dia (Pix, contas). Pra reserva e patrimônio maior, faz sentido pensar em banco grande — a regulação é mais rigorosa, a segurança é outra. É uma das coisas que a Ana mais ressalta.' });
   } else {
     diag.push({ icon:'✓', tone:'ok', title:'Dinheiro em instituição sólida',
-      text:'Bom. Continue com conta em banco grande pra reserva e relacionamento bancário. Use fintech só pra operação do dia a dia.' });
+      text:'Boa escolha pra a parte séria do patrimônio. Banco grande ou corretora é o lugar onde a reserva respira melhor e o relacionamento bancário se constrói.' });
   }
 
   // % da renda investida
   if(q4 === 1){
-    diag.push({ icon:'!', tone:'warn', title:'Aporte mensal abaixo do ideal',
-      text:'O padrão saudável é 25% da renda pra investimentos. Você tá abaixo disso. Talvez tenha ralos ocultos no orçamento — revise com a Planilha de Gastos pra identificar.' });
+    diag.push({ icon:'i', tone:'info', title:'Espaço pra aumentar o aporte',
+      text:'A referência saudável costuma ser 25% da renda em investimentos. Quando o aporte tá abaixo, quase sempre tem ralo oculto no orçamento — a Planilha de Gastos ajuda muito a enxergar isso com clareza.' });
   } else if(q4 === 3){
-    diag.push({ icon:'✓', tone:'ok', title:'Você guarda muito bem',
-      text:'Acima de 20% da renda é taxa de elite. Isso é o que separa quem se aposenta bem de quem chega aos 60 sem nada. Continue firme.' });
+    diag.push({ icon:'✓', tone:'ok', title:'Aporte acima da média',
+      text:'Investir mais de 20% da renda coloca você num grupo pequeno. Esse hábito, sustentado, é o que mais faz diferença na construção de patrimônio no longo prazo.' });
   }
 
-  // Mudança de vida + reação
+  // Mudança de vida
   if(q11 === 1){
-    diag.push({ icon:'i', tone:'info', title:'Mudança grande vindo pela frente',
-      text:'Quem sobrevive não é o mais forte — é o que se adapta. Com uma mudança grande chegando, é hora de reduzir risco, aumentar liquidez e engordar a reserva. Seu perfil de vida mudou, sua carteira muda junto.' });
+    diag.push({ icon:'i', tone:'info', title:'Uma mudança grande vem pela frente',
+      text:'Quem sobrevive não é o mais forte — é quem se adapta. Em momentos de transição, costuma fazer sentido reduzir risco, aumentar liquidez e engordar a reserva. A carteira acompanha a vida.' });
   }
 
   // Reação a queda de 10%
   if(q5 === 1){
-    diag.push({ icon:'!', tone:'warn', title:'Você reage no impulso em queda',
-      text:'Tirar tudo na queda é o comportamento que mais destrói patrimônio. Não é culpa sua — é o cérebro reagindo. Por isso você precisa de uma carteira bem montada ANTES do susto: quando a onda vier, você tá preparada.' });
+    diag.push({ icon:'i', tone:'info', title:'Tendência a reagir no impulso',
+      text:'Vender na queda é o comportamento que mais compromete patrimônio — e é totalmente humano. Por isso vale tanto ter uma carteira bem planejada antes do susto: quando a onda vier, a estrutura te segura, não a emoção.' });
   }
 
   // Expectativa de renda subir
   if(q6 === 3){
-    diag.push({ icon:'✓', tone:'ok', title:'Sua renda deve crescer',
-      text:'Você tá no ciclo de construção. Cada R$ 1 que você guarda e investe bem vira R$ 6 ao longo da vida — essa é a força dos juros compostos. Acelere os aportes enquanto tá na fase boa.' });
+    diag.push({ icon:'✓', tone:'ok', title:'Sua renda deve crescer nos próximos anos',
+      text:'Você está numa fase de construção. Cada R$ 1 guardado e bem investido tende a virar muito mais ao longo da vida — essa é a força dos juros compostos. Aproveitar esse ciclo com aportes consistentes faz uma diferença enorme lá na frente.' });
   } else if(q6 === 1){
-    diag.push({ icon:'i', tone:'info', title:'Renda deve diminuir (aposentadoria/transição)',
-      text:'Seu horizonte pede preservação do que você já construiu, não crescimento agressivo. Foque em renda fixa, proteção contra inflação (IPCA+) e liquidez — sem heroísmo.' });
+    diag.push({ icon:'i', tone:'info', title:'Renda tende a diminuir (transição/aposentadoria)',
+      text:'Esse momento pede mais preservação do que foi construído do que busca por crescimento agressivo. Renda fixa, proteção contra inflação (IPCA+) e liquidez costumam ser os protagonistas.' });
   }
 
-  // ----- RED FLAGS -----
+  // ----- PONTOS DE ATENÇÃO (antes red flags, agora mais convidativo) -----
   if(q8 === 1 && (base === 'agressivo' || q7 === 3)){
-    flags.push({ icon:'🚨', title:'OPERAÇÃO KAMIKAZE detectada',
-      text:'Você quer renda variável / aceita risco alto — mas não tem reserva. A Ana chama isso de operação kamikaze: é tudo certo pra dar errado. Monte as reservas ANTES de comprar qualquer ação.' });
+    flags.push({ icon:'💭', title:'Vontade de risco × base sem reservas',
+      text:'A combinação "quero investir em ação / aceito risco alto" com "ainda não tenho reserva" é o que a Ana chama de operação kamikaze. A ideia não é segurar o sonho — é construir a reserva primeiro pra que, quando você entrar na renda variável, o susto não quebre sua vida.' });
   }
   if(q10 === 2 && q8 >= 2){
-    flags.push({ icon:'⚠️', title:'Reserva em fintech = risco disfarçado',
-      text:'O FGC tá com rombo de quase metade. Bank Master é exemplo recente. Reserva de emergência precisa estar em banco grande — não em caixinha turbo de fintech que paga 120% do CDI porque o risco é maior.' });
+    flags.push({ icon:'💭', title:'Reserva em fintech: vale repensar',
+      text:'Caixinhas turbo pagam 120% do CDI justamente porque o risco é maior. O FGC, que cobre até R$ 250 mil, vem sendo bastante exigido nos últimos anos. Pra reserva (o dinheiro sagrado), banco grande costuma ser o lugar mais seguro.' });
   }
   if(q10 === 1){
-    flags.push({ icon:'🚨', title:'Poupança é perda silenciosa',
-      text:'Poupança rendeu em 2025 menos que a inflação. Cada mês ali é dinheiro perdendo valor. Migração pra CDB de liquidez diária 100% CDI é ação imediata.' });
+    flags.push({ icon:'💭', title:'Poupança: perda silenciosa',
+      text:'A poupança tem rendido abaixo da inflação. Não é urgência, é uma decisão que, olhando pro longo prazo, tende a custar caro. Um CDB 100% do CDI do seu banco grande resolve com a mesma segurança.' });
   }
   if(q4 === 1 && q6 === 3){
-    flags.push({ icon:'⚠️', title:'Renda subindo, aporte baixo',
-      text:'Sua renda deve crescer, mas você investe pouco. Cuidado com o efeito "inchei o padrão de vida": renda nova não pode virar gasto fixo novo — tem que virar aporte.' });
+    flags.push({ icon:'💭', title:'Renda subindo, aporte ainda enxuto',
+      text:'Quando a renda cresce, existe uma armadilha clássica: o padrão de vida sobe junto e o aporte fica igual. Vale o exercício de direcionar parte dos aumentos pro investimento antes do dinheiro "sumir" no dia a dia.' });
   }
 
   // ----- PRÓXIMOS PASSOS (3-4 acionáveis) -----
   if(q8 <= 2){
-    steps.push({ title:'Monte sua reserva de emergência',
-      text:'6 meses de gastos MÍNIMOS (pior cenário × 6) em CDB de liquidez diária de banco grande. Essa é a regra sagrada — sem ela, nada mais.' });
+    steps.push({ title:'Começar a montar a reserva de emergência',
+      text:'A referência é 6 meses de gastos mínimos (pior cenário × 6) em CDB de liquidez diária de banco grande. Sem pressa de chegar no total — o importante é começar e manter o ritmo.' });
   }
   if(q10 === 1){
-    steps.push({ title:'Tire o dinheiro da poupança',
-      text:'Abra CDB de liquidez diária 100% do CDI no seu banco grande. Mesma segurança, rendimento 3–4× maior. Faz hoje.' });
+    steps.push({ title:'Pensar em trocar a poupança por CDB',
+      text:'Abrir um CDB de liquidez diária 100% do CDI no seu banco grande costuma ser simples e faz diferença real ao longo dos anos — mesma segurança, rendimento bem maior.' });
   } else if(q10 === 2 && q8 >= 2){
-    steps.push({ title:'Migre a reserva pra banco grande',
-      text:'Itaú, BB, Bradesco, Caixa ou Santander. Sem tarifa (é seu direito por lei). Reserva séria fica ali, não em caixinha de fintech.' });
+    steps.push({ title:'Considerar migrar a reserva pra banco grande',
+      text:'Itaú, BB, Bradesco, Caixa ou Santander. Pacote essencial é gratuito por lei, então não precisa pagar tarifa. Pra reserva séria, esse é o lugar.' });
   }
   if(q8 === 3 && q9 <= 2){
-    steps.push({ title:'Monte reserva de oportunidade + gordura',
-      text:'Oportunidade = 50% da emergência, pra comprar barato quando aparecer. Gordura = 1-2× seu padrão mensal, pra viver sem apertar.' });
+    steps.push({ title:'Montar reserva de oportunidade + gordura',
+      text:'Oportunidade é cerca de 50% do tamanho da emergência — pra comprar barato quando aparecer. Gordura é 1 a 2 × o padrão mensal — pra viver sem apertar quando a vida der um solavanco.' });
   }
   if(q4 === 1){
-    steps.push({ title:'Revise seus gastos',
-      text:'Use a Planilha de Gastos Ana Brez pra achar o ralo oculto. A meta é chegar em 25% da renda pra investimentos.' });
+    steps.push({ title:'Olhar o orçamento com calma',
+      text:'A Planilha de Gastos ajuda muito a encontrar o "ralo oculto" — aquele pedaço da renda que some sem você perceber. Uma vez identificado, aumentar o aporte fica bem mais fácil.' });
   }
   if(recommended !== base){
-    steps.push({ title:'Adote o perfil adequado pro seu momento',
-      text:'Seu perfil natural é um, mas seu momento de vida pede outro. Não é sobre ser mais ou menos corajosa — é sobre ser inteligente.' });
+    steps.push({ title:'Adaptar o perfil ao momento de vida',
+      text:'Perfil natural é uma coisa, perfil pra agora é outra. Isso não é sobre coragem — é sobre ler o cenário pessoal com honestidade e ajustar. Vale mais do que parece.' });
   }
   // Sempre incluir
-  steps.push({ title:'Continue no Mapa Financeiro',
-      text:'As próximas seções (Reservas, Blocos, Distribuição) vão desdobrar exatamente o seu mapa. Domingo tem a Aula 4 — não perde.' });
+  steps.push({ title:'Seguir no Mapa Financeiro',
+      text:'As próximas seções (Reservas, Blocos, Distribuição) vão desdobrar seu mapa com calma. Domingo tem a Aula 4 — ela fecha o raciocínio e vale muito acompanhar.' });
 
   // Limita a 4 passos
   const topSteps = steps.slice(0, 4);
@@ -1328,7 +1361,7 @@ function renderResult(){
 
   const flagsHtml = analysis.flags.length ? `
     <div class="red-flags">
-      <div class="red-flags-title">🚨 Pontos de atenção no seu caso</div>
+      <div class="red-flags-title">💭 Pontos que vale olhar com carinho</div>
       ${analysis.flags.map(f => `
         <div class="red-flag-item">
           <div class="red-flag-icon">${f.icon}</div>
@@ -1340,7 +1373,8 @@ function renderResult(){
 
   const stepsHtml = `
     <div class="next-steps">
-      <div class="next-steps-title">🎯 Seus próximos passos</div>
+      <div class="next-steps-title">✨ Caminhos que fazem sentido pra você</div>
+      <div class="cvm-inline" style="margin-top:0;margin-bottom:14px;"><strong>Sugestões educacionais, não recomendações.</strong> São reflexões baseadas no que você respondeu. Analise seu momento, consulte um profissional habilitado antes de decidir.</div>
       ${analysis.steps.map((s,i) => `
         <div class="next-step">
           <div class="next-step-num">${i+1}</div>
@@ -1352,15 +1386,15 @@ function renderResult(){
 
   const adaptHtml = adapted ? `
     <div class="profile-adapt">
-      <div class="profile-adapt-label">⚖️ Perfil do investidor inteligente</div>
-      <h4>Seu perfil te define — mas seu momento de vida pede adaptação</h4>
+      <div class="profile-adapt-label">⚖️ O perfil do investidor inteligente</div>
+      <h4>Seu perfil te define — e seu momento de vida pode sugerir um ajuste</h4>
       <div class="profile-adapt-compare">
         <span class="profile-adapt-chip you">${p.icon} ${p.title}</span>
         <span class="profile-adapt-arrow">→</span>
         <span class="profile-adapt-chip now">${pRec.icon} ${pRec.title} <small style="font-weight:600;opacity:0.8;">(hoje)</small></span>
       </div>
       <div class="profile-adapt-text">
-        Seu perfil natural é <strong>${p.title.toLowerCase()}</strong>, mas pela sua situação atual (reservas, onde seu dinheiro está, mudanças de vida), o perfil adequado <strong>pra você agora</strong> é <strong>${pRec.title.toLowerCase()}</strong>. Isso não é rebaixamento — é inteligência. <em>"Eu sou agressiva. Mas hoje estou moderada. Porque o investidor inteligente se adapta ao cenário."</em>
+        Seu perfil natural é <strong>${p.title.toLowerCase()}</strong>. E pela sua situação atual (reservas, onde o dinheiro está, mudanças de vida), pode fazer sentido se mover como um <strong>${pRec.title.toLowerCase()}</strong> neste momento. Não é rebaixamento — é a inteligência de ler o cenário. <em>"Eu sou agressiva. Mas hoje estou moderada. Porque o investidor inteligente se adapta ao cenário."</em>
       </div>
     </div>
   ` : '';
@@ -1382,6 +1416,7 @@ function renderResult(){
 
       <div class="profile-alloc">
         <div class="profile-alloc-title">Distribuição sugerida da carteira${adapted ? ` (perfil ${pRec.label})` : ''}</div>
+        <div class="cvm-inline"><strong>Referência educacional baseada em perfil.</strong> Não constitui recomendação de investimento. Cada decisão depende do seu contexto pessoal — e da orientação de um profissional habilitado.</div>
         <div class="alloc-bar">
           ${activeProfile.alloc.rf > 0 ? `<div class="alloc-seg alloc-seg-rf" style="width:${activeProfile.alloc.rf}%;">${activeProfile.alloc.rf}% Renda Fixa</div>` : ''}
           ${activeProfile.alloc.rv > 0 ? `<div class="alloc-seg alloc-seg-rv" style="width:${activeProfile.alloc.rv}%;">${activeProfile.alloc.rv}% Renda Variável</div>` : ''}
@@ -1395,7 +1430,7 @@ function renderResult(){
       <div class="profile-section-sep"><span>Diagnóstico personalizado</span></div>
 
       <div class="diagnostic">
-        <div class="diagnostic-title">🩺 Leitura da sua situação</div>
+        <div class="diagnostic-title">🔍 Uma leitura honesta do seu momento</div>
         ${diagHtml}
       </div>
 
@@ -1405,9 +1440,10 @@ function renderResult(){
 
       <div class="scenario">
         <div class="scenario-flag">🇧🇷</div>
-        <div class="scenario-label">Como o cenário atual impacta seu perfil</div>
-        <h4>Selic alta muda o jogo</h4>
+        <div class="scenario-label">Como o cenário atual conversa com seu perfil</div>
+        <h4>O que muda com a Selic alta</h4>
         <p>${activeProfile.scenario}</p>
+        <p style="margin-top:14px;font-size:0.78rem;color:rgba(253,245,224,0.65);font-style:italic;">Leitura educacional de cenário. Nomes de investimentos mencionados são exemplos didáticos — não configuram recomendação nem indicação de compra.</p>
       </div>
 
       ${stepsHtml}
@@ -1420,9 +1456,9 @@ function renderResult(){
       </div>
 
       <div class="profile-warn">
-        <div class="profile-warn-title">⚠️ A regra que vale pra todo mundo</div>
+        <div class="profile-warn-title">💡 Um princípio que vale pra todo mundo</div>
         <div class="profile-warn-text">
-          Enquanto você <strong>não tiver reserva de emergência, reserva de oportunidade e gordura montados</strong>, seu perfil é obrigatoriamente <strong>conservador</strong> — independente do que esse teste disse. Essa é a regra da Ana e não tem exceção. Antes de correr atrás de retorno, monte o colchão.
+          Enquanto a base das <strong>três reservas</strong> (emergência, oportunidade e gordura) não estiver montada, faz muito sentido manter o perfil <strong>conservador</strong> — independente do que o teste apontou. É o que a Ana ensina há anos: a base vem antes do crescimento. Com ela de pé, tudo o que vier depois fica bem mais sólido.
         </div>
       </div>
 
@@ -1439,7 +1475,11 @@ function renderResult(){
       </div>
 
       <div class="profile-footer">
-        Seu perfil muda ao longo da vida. Refaça este teste a cada 6 meses ou quando sua situação mudar significativamente. <strong>Este teste é educacional e não constitui recomendação de investimentos.</strong> Consulte um profissional antes de tomar decisões financeiras.
+        Seu perfil muda ao longo da vida. Refaça este teste a cada 6 meses ou quando sua situação mudar significativamente.
+      </div>
+
+      <div class="footer-cvm">
+        <strong>📌 Disclaimer legal importante.</strong> Todo o conteúdo desta plataforma (teste, leitura, sugestões, exemplos de investimento, cenário econômico) é <strong>estritamente educacional</strong> e reflete opiniões e estudos pessoais da Ana Brez. <strong>Nada aqui configura recomendação, indicação ou oferta de produtos financeiros</strong> nos termos da Resolução CVM 20/2021 e demais normativos. Antes de tomar qualquer decisão, consulte um profissional habilitado (assessor de investimentos registrado na CVM, analista certificado ou consultor autorizado). Resultados passados não garantem resultados futuros. Todo investimento envolve risco.
       </div>
     </div>
   `;
