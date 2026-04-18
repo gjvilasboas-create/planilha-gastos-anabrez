@@ -1815,21 +1815,51 @@ var importColMap = {};
 
 function handleFileUpload(e) { const f = e.target.files[0]; if (f) processFile(f); }
 
-function processFile(file) {
+// Lê arquivo como texto tentando UTF-8 e caindo para Latin-1 se vier com bytes inválidos
+function readTextSmart(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const buf = e.target.result;
+      // UTF-8 com fatal=true só rejeita se tiver bytes inválidos
+      try {
+        const utf8 = new TextDecoder('utf-8', { fatal: true }).decode(new Uint8Array(buf));
+        resolve(utf8.replace(/^\uFEFF/, ''));
+      } catch (_) {
+        const latin = new TextDecoder('iso-8859-1').decode(new Uint8Array(buf));
+        resolve(latin.replace(/^\uFEFF/, ''));
+      }
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function processFile(file) {
   const ext = file.name.split('.').pop().toLowerCase();
-  if (ext === 'csv') {
-    Papa.parse(file, {
-      encoding: 'utf-8',
-      complete: r => showImportPreview(r.data, file.name),
-      error: () => toast('Erro ao ler o arquivo CSV', 'error')
-    });
+  if (ext === 'csv' || ext === 'txt') {
+    try {
+      const text = await readTextSmart(file);
+      const r = Papa.parse(text, { skipEmptyLines: true });
+      if (!r.data || r.data.length === 0) { toast('CSV vazio ou ilegível', 'error'); return; }
+      showImportPreview(r.data, file.name);
+    } catch (err) {
+      console.error('CSV error:', err);
+      toast('Erro ao ler o CSV. Tente salvar novamente como UTF-8.', 'error');
+    }
   } else if (ext === 'xls' || ext === 'xlsx') {
     const reader = new FileReader();
     reader.onload = e => {
-      const wb = XLSX.read(e.target.result, { type: 'array' });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      showImportPreview(rows, file.name);
+      try {
+        const wb = XLSX.read(e.target.result, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false, defval: '' });
+        if (!rows || rows.length < 2) { toast('Planilha vazia ou sem dados.', 'error'); return; }
+        showImportPreview(rows, file.name);
+      } catch (err) {
+        console.error('XLSX error:', err);
+        toast('Erro ao ler Excel. Confira se o arquivo não está corrompido ou protegido.', 'error');
+      }
     };
     reader.readAsArrayBuffer(file);
   } else if (ext === 'pdf') {
@@ -1837,6 +1867,24 @@ function processFile(file) {
   } else {
     toast('Formato não suportado. Use .CSV, .XLS, .XLSX ou .PDF', 'error');
   }
+}
+
+// Encontra a linha que realmente contém o header (≥2 colunas + ao menos 1 palavra-chave)
+function detectHeaderIndex(rows) {
+  const kw = /(data|dt|vencimento|histor|descri|detalh|movimen|lan[çc]amento|valor|vlr|quantia|amount|cr[eé]dito|d[eé]bito|entrada|sa[ií]da|tipo|categ)/i;
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+    const cells = rows[i].map(c => String(c ?? '').trim());
+    const nonEmpty = cells.filter(c => c).length;
+    if (nonEmpty < 2) continue;
+    const hasKw = cells.some(c => kw.test(c));
+    if (hasKw) return i;
+  }
+  // fallback: primeira linha com ≥2 células preenchidas
+  for (let i = 0; i < rows.length; i++) {
+    const nonEmpty = rows[i].filter(c => String(c ?? '').trim()).length;
+    if (nonEmpty >= 2) return i;
+  }
+  return 0;
 }
 
 async function processPDF(file) {
@@ -1912,27 +1960,36 @@ function parsePDFText(text) {
 
 function showImportPreview(rows, fileName) {
   // Remove empty rows
-  rows = rows.filter(r => r.some(c => c !== null && c !== undefined && String(c).trim()));
+  rows = rows.filter(r => Array.isArray(r) && r.some(c => c !== null && c !== undefined && String(c).trim()));
   if (rows.length < 2) { toast('Arquivo vazio ou inválido', 'error'); return; }
+
+  // Detect the real header row (skip meta-headers like "Extrato de abril")
+  const headerIdx = detectHeaderIndex(rows);
+  if (headerIdx > 0) rows = rows.slice(headerIdx);
 
   importData = rows;
   importColMap = {};
 
-  // Try to auto-detect header
   const header = rows[0].map(c => String(c || '').toLowerCase().trim());
   const colCount = header.length;
+
+  // Regex mais abrangentes para detectar automaticamente as colunas
+  const reDate = /(^|\b)(data|dt|date|vencimento|competencia|compet[eê]ncia)\b/;
+  const reDesc = /(descri|hist[óo]ric|detalh|estabelec|lan[çc]amento|movimen|titulo|t[ií]tulo|memo|referen|opera[çc]|finalidade)/;
+  const reAmount = /(valor|vlr|amount|quantia|cr[eé]dito|d[eé]bito|entrada|sa[ií]da|montante|total)/;
+  const reType = /(tipo|type|natureza|classe)/;
 
   // Build preview table
   let html = '<table class="preview-table"><thead><tr>';
   for (let i = 0; i < colCount; i++) {
     html += `<th>
       <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:4px">Coluna ${i+1}: ${rows[0][i] || ''}</div>
-      <select onchange="importColMap[this.value.split(':')[0]]=parseInt(this.value.split(':')[1])" id="colMap${i}">
+      <select onchange="importColMap[this.value.split(':')[0]]=parseInt(this.value.split(':')[1]);updateImportSummary()" id="colMap${i}">
         <option value="">Ignorar</option>
-        <option value="date:${i}" ${/^(date|data|dt|vencimento)/.test(header[i])?'selected':''}>📅 Data</option>
-        <option value="desc:${i}" ${/^(desc|title|titulo|estabelecimento|historico|lançamento|lancamento)/.test(header[i])?'selected':''}>📝 Descrição</option>
-        <option value="amount:${i}" ${/^(amount|valor|value|vlr|quantia)/.test(header[i])?'selected':''}>💰 Valor</option>
-        <option value="type:${i}" ${/^(type|tipo)/.test(header[i])?'selected':''}>🏷️ Tipo</option>
+        <option value="date:${i}" ${reDate.test(header[i])?'selected':''}>📅 Data</option>
+        <option value="desc:${i}" ${reDesc.test(header[i])?'selected':''}>📝 Descrição</option>
+        <option value="amount:${i}" ${reAmount.test(header[i])?'selected':''}>💰 Valor</option>
+        <option value="type:${i}" ${reType.test(header[i])?'selected':''}>🏷️ Tipo</option>
       </select>
     </th>`;
   }
@@ -1988,25 +2045,45 @@ function parseImportData() {
   const defaultCat = document.getElementById('importDefaultCategory').value;
   const results = [];
 
+  // Meses em PT pra aceitar "01 abr 2026", "01/ABR/26"
+  const meses = {jan:1,fev:2,mar:3,abr:4,mai:5,jun:6,jul:7,ago:8,set:9,out:10,nov:11,dez:12};
+  const skipped = { date:0, amount:0, empty:0 };
+
   for (let i = 1; i < importData.length; i++) {
     const row = importData[i];
-    if (!row || !row[dateCol] || !row[descCol]) continue;
+    if (!row || !row[dateCol] || !row[descCol]) { skipped.empty++; continue; }
 
-    // Parse date
-    let dateStr = String(row[dateCol]).trim();
+    // Parse date (aceita dd/mm/yyyy, dd/mm/yy, yyyy-mm-dd, dd/MMM/yyyy, com ou sem hora)
+    let dateStr = String(row[dateCol]).trim().split(/\s+/)[0]; // remove hora
     let parsedDate = '';
-    const brMatch = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    const brMatch = dateStr.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
     const isoMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (brMatch) parsedDate = `${brMatch[3]}-${brMatch[2].padStart(2,'0')}-${brMatch[1].padStart(2,'0')}`;
-    else if (isoMatch) parsedDate = `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
-    else continue;
+    const brTextMatch = dateStr.match(/^(\d{1,2})[\/\-\s]?([a-zA-Zçáéí]{3,})[\/\-\s]?(\d{2,4})$/);
+    if (brMatch) {
+      let y = brMatch[3];
+      if (y.length === 2) y = (parseInt(y) > 50 ? '19' : '20') + y;
+      parsedDate = `${y}-${brMatch[2].padStart(2,'0')}-${brMatch[1].padStart(2,'0')}`;
+    } else if (isoMatch) {
+      parsedDate = `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+    } else if (brTextMatch) {
+      const m = meses[brTextMatch[2].toLowerCase().slice(0,3)];
+      let y = brTextMatch[3];
+      if (y.length === 2) y = (parseInt(y) > 50 ? '19' : '20') + y;
+      if (m) parsedDate = `${y}-${String(m).padStart(2,'0')}-${brTextMatch[1].padStart(2,'0')}`;
+    }
+    if (!parsedDate) { skipped.date++; continue; }
 
-    // Parse amount
-    let amtStr = String(row[amountCol]).replace(/[R$\s]/g, '').trim();
+    // Parse amount — aceita R$, parênteses = negativo, . e , como decimal
+    let amtStr = String(row[amountCol]).trim();
+    // primeiro limpa R$/espaços pra depois detectar parênteses
+    amtStr = amtStr.replace(/[R$\s]/g, '');
+    let isParenNeg = /^\(.+\)$/.test(amtStr);
+    amtStr = amtStr.replace(/^\(|\)$/g, '').trim();
     if (amtStr.includes(',') && !amtStr.includes('.')) amtStr = amtStr.replace(/\./g, '').replace(',', '.');
     else if (amtStr.includes(',') && amtStr.indexOf('.') < amtStr.indexOf(',')) amtStr = amtStr.replace(/\./g, '').replace(',', '.');
-    const amount = parseFloat(amtStr);
-    if (isNaN(amount) || amount === 0) continue;
+    let amount = parseFloat(amtStr);
+    if (isNaN(amount) || amount === 0) { skipped.amount++; continue; }
+    if (isParenNeg) amount = -Math.abs(amount);
 
     // Determine type
     let type = 'despesa';
@@ -2028,12 +2105,24 @@ function parseImportData() {
       tags: '',
     });
   }
+  window.lastImportSkipped = skipped;
   return results;
 }
 
 function confirmImport() {
   const parsed = parseImportData();
-  if (parsed.length === 0) { toast('Nenhum registro válido encontrado. Verifique o mapeamento de colunas.', 'error'); return; }
+  if (parsed.length === 0) {
+    const s = window.lastImportSkipped || {};
+    const miss = [];
+    if (importColMap.date === undefined) miss.push('Data');
+    if (importColMap.desc === undefined) miss.push('Descrição');
+    if (importColMap.amount === undefined) miss.push('Valor');
+    if (miss.length) { toast('Mapeie as colunas: ' + miss.join(', '), 'error'); return; }
+    let msg = 'Nenhum registro válido encontrado.';
+    if (s.date) msg += ` ${s.date} linhas com data em formato não reconhecido.`;
+    if (s.amount) msg += ` ${s.amount} linhas com valor inválido.`;
+    toast(msg, 'error'); return;
+  }
 
   // Duplicate detection
   let dupes = 0;
