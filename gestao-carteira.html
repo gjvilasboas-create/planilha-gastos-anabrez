@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gestão de Carteira — Ana Brez</title>
+<title>Gerenciador de Ativos — Ana Brez</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -175,6 +175,22 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 footer{text-align:center;padding:30px 20px;color:var(--text-muted);font-size:12px;line-height:1.6}
 footer a{color:var(--gold-dark);text-decoration:none}
 
+/* DISCLAIMER BANNER */
+.disclaimer-bar{background:#FFF8E6;border:1px solid #E8C75A;border-left:4px solid var(--gold-dark);color:#5C4A1A;padding:10px 16px;font-size:12px;border-radius:var(--radius-sm);margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+.disclaimer-bar strong{color:#3d2f00}
+.disclaimer-icon{font-size:18px;flex-shrink:0;margin-top:-1px}
+.disclaimer-inline{background:var(--gold-bg);border-left:3px solid var(--gold);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--navy-2);border-radius:var(--radius-sm);line-height:1.5}
+.disclaimer-inline strong{color:var(--gold-dark)}
+.disclaimer-footer{background:#FFF8E6;border:1px solid #E8C75A;border-radius:var(--radius-sm);padding:16px 20px;margin:20px 0;text-align:left;color:#3d2f00;font-size:11.5px;line-height:1.7}
+.disclaimer-footer h4{color:#3d2f00;margin-bottom:6px;font-size:13px}
+/* Modal disclaimer */
+.disclaimer-modal .modal{max-width:560px}
+.disclaimer-modal h3{color:var(--navy);margin-bottom:4px}
+.disclaimer-modal .cvm-body{font-size:13.5px;line-height:1.65;color:var(--text)}
+.disclaimer-modal .cvm-body strong{color:var(--gold-dark)}
+.disclaimer-modal ul{margin:12px 0 12px 20px}
+.disclaimer-modal li{margin-bottom:6px;font-size:13px}
+
 /* UTIL */
 .row-actions{display:flex;gap:4px}
 .hidden{display:none!important}
@@ -186,7 +202,7 @@ footer a{color:var(--gold-dark);text-decoration:none}
 <body>
 
 <header>
-  <div class="logo">RIQZ <span>Gestão de Carteira — Ana Brez</span></div>
+  <div class="logo">RIQZ <span>Gerenciador de Ativos — Ana Brez</span></div>
   <div class="header-right">
     <span class="chip" id="dataChip">📅 Abril/2026</span>
     <button class="btn secondary xs" onclick="carregarDemo()">🎯 Dados de exemplo</button>
@@ -195,10 +211,17 @@ footer a{color:var(--gold-dark);text-decoration:none}
 
 <div class="container">
 
+<div class="disclaimer-bar">
+  <span class="disclaimer-icon">⚖️</span>
+  <div>
+    <strong>Ferramenta de educação financeira, não recomendação.</strong> Nada aqui é sugestão de compra/venda de ativos nem garantia de retorno. Cada decisão é de responsabilidade exclusiva de quem usa. <a href="#" onclick="abrirDisclaimer();return false" style="color:var(--gold-dark);font-weight:600">Ler aviso completo</a>.
+  </div>
+</div>
+
 <div class="welcome" id="welcome">
   <button class="close-welcome" onclick="fecharWelcome()">✕</button>
-  <h2>Sua carteira sob a metodologia Ana Brez</h2>
-  <p>Cadastre cada ativo que você tem. O sistema classifica automaticamente em <strong style="color:var(--gold)">Preservação → Equilíbrio → Crescimento</strong> (os 3 blocos da CPL 3), mostra concentração, alerta sobre os <strong style="color:var(--gold)">6 erros comuns</strong> da CPL 4 e calcula seu patrimônio total + renda passiva.</p>
+  <h2>Seu gerenciador pessoal de ativos</h2>
+  <p>Ferramenta para você <strong style="color:var(--gold)">organizar e visualizar</strong> os ativos que já tem. Classifica em <strong style="color:var(--gold)">Preservação → Equilíbrio → Crescimento</strong> (metodologia Ana Brez), mostra concentração e soma rendimentos. <strong style="color:var(--gold)">Não é recomendação de investimento.</strong> Cada decisão é sua.</p>
 </div>
 
 <div class="tabs" id="tabs">
@@ -206,7 +229,7 @@ footer a{color:var(--gold-dark);text-decoration:none}
   <button class="tab" onclick="switchTab('carteira')">💼 Meus Ativos</button>
   <button class="tab" onclick="switchTab('raiox')">🔍 Raio-X</button>
   <button class="tab" onclick="switchTab('erros')">⚠️ 6 Erros</button>
-  <button class="tab" onclick="switchTab('proventos')">💰 Proventos</button>
+  <button class="tab" onclick="switchTab('proventos')">💰 Rendimentos</button>
 </div>
 
 <!-- DASHBOARD -->
@@ -250,6 +273,9 @@ footer a{color:var(--gold-dark);text-decoration:none}
   <div class="card">
     <div class="card-title">🎯 Diagnóstico da sua carteira</div>
     <div class="card-subtitle">Análise automática baseada na metodologia Ana Brez</div>
+    <div class="disclaimer-inline">
+      ⚠️ <strong>Importante:</strong> os alertas abaixo são <strong>observações educativas automáticas</strong> com base nos dados que você mesmo cadastrou. Não constituem recomendação de investimento, análise individualizada nem garantia de resultado. Converse com um assessor habilitado antes de qualquer decisão.
+    </div>
     <div id="alertas"></div>
   </div>
   <div class="grid-2">
@@ -273,6 +299,9 @@ footer a{color:var(--gold-dark);text-decoration:none}
   <div class="card">
     <div class="card-title">⚠️ Os 6 erros mais comuns (CPL 4 — Ana Brez)</div>
     <div class="card-subtitle">Sistema analisa sua carteira e identifica automaticamente quais erros você pode estar cometendo</div>
+    <div class="disclaimer-inline">
+      ⚠️ <strong>Conteúdo educativo baseado em material público da CPL 4 de Ana Brez.</strong> As marcações "OK" ou "Revisar" são heurísticas automáticas sobre os dados cadastrados — <strong>não são recomendação de investimento, não sugerem compra/venda de ativos</strong> e não garantem nenhum resultado. A análise de cada caso concreto cabe a profissional habilitado.
+    </div>
     <div id="erroChecklist"></div>
   </div>
 </div>
@@ -282,20 +311,23 @@ footer a{color:var(--gold-dark);text-decoration:none}
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
       <div>
-        <div class="card-title" style="margin:0">💰 Proventos Recebidos</div>
-        <div class="card-subtitle" style="margin:4px 0 0">Dividendos + JCP + Aluguéis de FII — base pro cálculo de renda passiva</div>
+        <div class="card-title" style="margin:0">💰 Rendimentos registrados</div>
+        <div class="card-subtitle" style="margin:4px 0 0">Dividendos, JCP, cupons e aluguéis de FII que você recebeu — apenas organização do que já entrou</div>
       </div>
-      <button class="btn primary" onclick="abrirModalProvento()">+ Registrar provento</button>
+      <button class="btn primary" onclick="abrirModalProvento()">+ Registrar rendimento</button>
+    </div>
+    <div class="disclaimer-inline">
+      ⚠️ Valores informados <strong>são apenas registros históricos inseridos por você</strong>. Os totais e médias não são promessa, projeção garantida ou indicação de rendimento futuro.
     </div>
     <div id="proventosTable"></div>
   </div>
   <div class="grid-2">
     <div class="card">
-      <div class="card-title">📅 Proventos por mês</div>
+      <div class="card-title">📅 Rendimentos por mês</div>
       <div class="chart-wrap"><canvas id="chartProventos"></canvas></div>
     </div>
     <div class="card">
-      <div class="card-title">🎯 Renda passiva projetada</div>
+      <div class="card-title">📊 Totais registrados</div>
       <div id="projecaoRenda"></div>
     </div>
   </div>
@@ -381,9 +413,9 @@ footer a{color:var(--gold-dark);text-decoration:none}
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Provento mensal (R$)</label>
+          <label>Rendimento mensal informado (R$)</label>
           <input type="number" step="0.01" id="ativoProvento" placeholder="50">
-          <div class="hint">Dividendo/JCP/aluguel médio por mês (0 se não tem)</div>
+          <div class="hint">Média mensal que você já recebeu desse ativo (0 se não recebe). Valor histórico, não projeção.</div>
         </div>
         <div class="form-group">
           <label>Data da compra</label>
@@ -409,7 +441,7 @@ footer a{color:var(--gold-dark);text-decoration:none}
 <div class="modal-overlay" id="modalProvento">
   <div class="modal">
     <div class="modal-head">
-      <h3>Registrar provento recebido</h3>
+      <h3>Registrar rendimento recebido</h3>
       <button class="modal-close" onclick="fecharModalProvento()">✕</button>
     </div>
     <div class="modal-body">
@@ -449,10 +481,45 @@ footer a{color:var(--gold-dark);text-decoration:none}
 
 <div class="toast" id="toast"></div>
 
+<div class="container">
+  <div class="disclaimer-footer">
+    <h4>⚖️ Aviso Legal — Disclaimer CVM</h4>
+    <p>Esta ferramenta tem <strong>caráter exclusivamente educativo</strong>. Os dados, gráficos, alertas e análises exibidos são gerados automaticamente a partir das informações que o próprio usuário cadastra, e servem apenas para organizar e visualizar o patrimônio pessoal.</p>
+    <p style="margin-top:8px"><strong>Nada aqui constitui:</strong> recomendação pública ou privada de investimento, oferta de valores mobiliários, consultoria ou análise de valores mobiliários nos termos das Resoluções CVM 19, 20 e 21/2021, indicação de compra, venda ou manutenção de qualquer ativo, promessa ou garantia de rentabilidade passada ou futura.</p>
+    <p style="margin-top:8px">Ana Brez, a plataforma e seus desenvolvedores <strong>não se responsabilizam por decisões de investimento, perdas financeiras ou resultados</strong> obtidos com base nas informações apresentadas. Investimentos envolvem riscos. Rentabilidade passada não representa garantia de rentabilidade futura. Consulte profissional habilitado (assessor/analista/gestor registrado na CVM) antes de qualquer decisão.</p>
+  </div>
+</div>
+
 <footer>
-  Metodologia baseada em <strong>Ana Brez</strong> — Método Riqueza (CPL 3: 3 blocos; CPL 4: 6 erros).<br>
-  Educação financeira, não recomendação. <a href="planilha-magica.html">Planilha Mágica</a> · <a href="index.html">Controle de Gastos</a>
+  Metodologia baseada em <strong>Ana Brez</strong> — Método Riqueza (CPL 3 + CPL 4).<br>
+  Educação financeira · Não recomendação · Não há promessa de retorno.<br>
+  <a href="planilha-magica.html">Planilha Mágica</a> · <a href="index.html">Controle de Gastos</a> · <a href="#" onclick="abrirDisclaimer();return false">Aviso completo</a>
 </footer>
+
+<!-- MODAL DISCLAIMER (primeiro acesso + sempre acessível) -->
+<div class="modal-overlay disclaimer-modal" id="modalDisclaimer">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>⚖️ Antes de começar — leia com atenção</h3>
+    </div>
+    <div class="modal-body cvm-body">
+      <p>Esta é uma <strong>ferramenta de educação financeira</strong> para organizar e visualizar seu patrimônio. <strong>Não é recomendação de investimento.</strong></p>
+      <ul>
+        <li>Os dados são inseridos por você e ficam apenas no seu navegador (localStorage).</li>
+        <li>Os alertas e análises são <strong>heurísticas automáticas educativas</strong>, não aconselhamento personalizado.</li>
+        <li><strong>Nada aqui é sugestão de compra, venda ou manutenção de ativo</strong>, oferta de valor mobiliário, consultoria ou análise regulada pela CVM.</li>
+        <li><strong>Não há promessa nem garantia</strong> de rentabilidade, retorno, proteção de capital ou qualquer resultado financeiro.</li>
+        <li>Rentabilidade passada <strong>não garante</strong> rentabilidade futura. Investimentos envolvem riscos, incluindo perda do capital investido.</li>
+        <li>Ana Brez, a plataforma e seus desenvolvedores <strong>não se responsabilizam</strong> por decisões tomadas com base nas informações aqui exibidas.</li>
+        <li>Para decisões de investimento, consulte um profissional habilitado (assessor, analista ou gestor registrado na CVM).</li>
+      </ul>
+      <p style="background:var(--gold-bg);padding:10px 14px;border-radius:var(--radius-sm);border-left:3px solid var(--gold-dark);margin-top:12px"><strong>Ao continuar, você declara que leu, entendeu e concorda com este aviso.</strong></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn primary" onclick="aceitarDisclaimer()">Li e concordo — continuar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ============================================================
@@ -472,7 +539,7 @@ const ALVO_BLOCOS = {
   'Arrojado':    {'Preservação':20,'Equilíbrio':35,'Crescimento':45}
 };
 
-let D = { ativos:[], proventos:[], evolucao:{}, perfil:'Moderado', welcomeClosed:false };
+let D = { ativos:[], proventos:[], evolucao:{}, perfil:'Moderado', welcomeClosed:false, disclaimerAceito:false };
 
 function load(){
   try{
@@ -560,14 +627,14 @@ function renderDashboard(){
       <div class="kpi-sub ${pct1>=0?'up':'down'}">${pct1>=0?'+':''}${fmt(c.totalAtual-c.totalInvestido)} sobre ${fmt(c.totalInvestido)}</div>
     </div>
     <div class="kpi blue">
-      <div class="kpi-label">💵 Renda Passiva</div>
+      <div class="kpi-label">💵 Rendimento mensal</div>
       <div class="kpi-value">${fmt(c.proventoMensal)}</div>
-      <div class="kpi-sub">/mês · ${fmt(c.proventoAnual)} /ano</div>
+      <div class="kpi-sub">informado · ${fmt(c.proventoAnual)} /ano</div>
     </div>
     <div class="kpi orange">
-      <div class="kpi-label">📊 Div. Yield Carteira</div>
-      <div class="kpi-value">${pct(c.dy)}</div>
-      <div class="kpi-sub">ao ano</div>
+      <div class="kpi-label">🗂️ Ativos cadastrados</div>
+      <div class="kpi-value">${D.ativos.length}</div>
+      <div class="kpi-sub">em ${Object.keys(c.porTipo).length} tipos diferentes</div>
     </div>
   `;
 
@@ -689,7 +756,7 @@ function renderCarteira(){
     </tr>`;
   }).join('');
   $('carteiraTable').innerHTML = `<div class="table-wrap"><table>
-    <thead><tr><th>Ativo</th><th>Bloco</th><th>Investido</th><th>Atual</th><th>Rent.</th><th>Prov/mês</th><th>% Cart.</th><th></th></tr></thead>
+    <thead><tr><th>Ativo</th><th>Bloco</th><th>Investido</th><th>Atual</th><th>Variação</th><th>Rend/mês</th><th>% Total</th><th></th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
@@ -739,9 +806,9 @@ function renderRaiox(){
     alerts.push({kind:'orange', icon:'₿', text:`${pct0(cripto/c.totalAtual)} em cripto — acima do sugerido (≤15%). Cripto tem volatilidade alta.`});
   }
 
-  // 6. Nenhum DY
+  // 6. Nenhum rendimento informado
   if(c.proventoMensal === 0 && c.totalAtual > 5000){
-    alerts.push({kind:'blue', icon:'💵', text:`Nenhum ativo pagando provento. Considere incluir <strong>FII ou ações boas pagadoras</strong> pra gerar renda passiva.`});
+    alerts.push({kind:'blue', icon:'💵', text:`Nenhum ativo cadastrado com rendimento mensal. Se você recebe dividendos, JCP ou aluguel, informe no cadastro de cada ativo para aparecer aqui.`});
   }
 
   if(alerts.length === 0) alerts.push({kind:'green', icon:'✅', text:`<strong>Sua carteira está equilibrada</strong>. Continue acompanhando mensalmente e ajustando os aportes.`});
@@ -923,27 +990,27 @@ function renderProventos(){
     });
   }
 
-  // Projeção renda passiva
+  // Totais registrados (sem linguagem de projeção/garantia)
   const mensal = c.proventoMensal;
   const anual = mensal*12;
-  const meta5k = 5000;
-  const meta10k = 10000;
-  const anosPara5k = mensal<5000 && mensal>0 ? ((meta5k/mensal)-1).toFixed(1) : null;
+  const totalRegistrado = (D.proventos||[]).reduce((s,x)=>s+(+x.valor||0),0);
+  const qtdRegs = (D.proventos||[]).length;
+  const mediaReal = qtdRegs>0 ? totalRegistrado/Math.max(1, Object.keys(
+    (D.proventos||[]).reduce((acc,x)=>{if(x.data){acc[x.data.slice(0,7)]=1}return acc},{})
+  ).length) : 0;
   $('projecaoRenda').innerHTML = `
     <div style="margin-bottom:14px">
-      <div class="kpi-label">Renda passiva atual (baseada no cadastro de ativos)</div>
+      <div class="kpi-label">Soma dos rendimentos informados nos ativos</div>
       <div style="font-size:28px;font-weight:700;color:var(--green-dark)">${fmt(mensal)}/mês</div>
-      <div style="font-size:13px;color:var(--text-muted)">${fmt(anual)} por ano</div>
+      <div style="font-size:13px;color:var(--text-muted)">${fmt(anual)} por ano · valor informado no cadastro</div>
     </div>
     <div style="padding:14px;background:var(--gold-bg);border-radius:var(--radius-sm)">
-      <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">🎯 Até R$ 5.000/mês</div>
-      <div style="font-size:13px">Faltam <strong>${fmt(Math.max(0, meta5k-mensal))}/mês</strong> ${mensal>=5000?'✅ META BATIDA':''}</div>
-      <div class="bloco-bar" style="margin-top:8px"><div class="bloco-bar-fill" style="width:${Math.min(100,mensal/meta5k*100)}%;background:var(--gold)"></div></div>
+      <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">📒 Total efetivamente registrado</div>
+      <div style="font-size:20px;font-weight:700;color:var(--navy)">${fmt(totalRegistrado)}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px">${qtdRegs} lançamento(s)${mediaReal>0?' · média mensal '+fmt(mediaReal):''}</div>
     </div>
-    <div style="padding:14px;background:var(--green-bg);border-radius:var(--radius-sm);margin-top:10px">
-      <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">🎯 Até R$ 10.000/mês (liberdade)</div>
-      <div style="font-size:13px">Faltam <strong>${fmt(Math.max(0, meta10k-mensal))}/mês</strong> ${mensal>=10000?'✅ LIBERDADE':''}</div>
-      <div class="bloco-bar" style="margin-top:8px"><div class="bloco-bar-fill" style="width:${Math.min(100,mensal/meta10k*100)}%;background:var(--green)"></div></div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:10px;line-height:1.5">
+      ⚠️ Os números acima são <strong>apenas soma aritmética</strong> dos valores cadastrados por você. Não são projeção, meta, sugestão, promessa nem estimativa de rendimento futuro.
     </div>
   `;
 }
@@ -1091,6 +1158,9 @@ function renderAll(){
 // ============================================================
 function fecharWelcome(){ D.welcomeClosed = true; save(); $('welcome').style.display='none'; }
 
+function abrirDisclaimer(){ $('modalDisclaimer').classList.add('open'); }
+function aceitarDisclaimer(){ D.disclaimerAceito = true; save(); $('modalDisclaimer').classList.remove('open'); }
+
 function carregarDemo(){
   if(D.ativos.length && !confirm('Isso vai substituir os dados atuais pelos dados de exemplo. Continuar?')) return;
   D.ativos = [
@@ -1126,6 +1196,7 @@ function carregarDemo(){
 // ============================================================
 load();
 if(D.welcomeClosed) $('welcome').style.display='none';
+if(!D.disclaimerAceito) $('modalDisclaimer').classList.add('open');
 // atualiza chip da data
 const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 $('dataChip').textContent = '📅 '+monthNames[new Date().getMonth()]+'/'+new Date().getFullYear();
