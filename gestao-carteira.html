@@ -226,9 +226,9 @@ footer a{color:var(--gold-dark);text-decoration:none}
 
 <div class="tabs" id="tabs">
   <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+  <button class="tab" onclick="switchTab('erros')">📚 6 Erros Comuns</button>
   <button class="tab" onclick="switchTab('carteira')">💼 Meus Ativos</button>
   <button class="tab" onclick="switchTab('raiox')">🔍 Raio-X</button>
-  <button class="tab" onclick="switchTab('erros')">⚠️ 6 Erros</button>
   <button class="tab" onclick="switchTab('proventos')">💰 Rendimentos</button>
 </div>
 
@@ -297,10 +297,10 @@ footer a{color:var(--gold-dark);text-decoration:none}
 <!-- 6 ERROS -->
 <div class="tab-content" id="tab-erros">
   <div class="card">
-    <div class="card-title">⚠️ Os 6 erros mais comuns (CPL 4 — Ana Brez)</div>
-    <div class="card-subtitle">Sistema analisa sua carteira e identifica automaticamente quais erros você pode estar cometendo</div>
+    <div class="card-title">📚 Os 6 erros mais comuns em investimentos</div>
+    <div class="card-subtitle">Conteúdo educativo · baseado em material público da Ana Brez (CPL 4)</div>
     <div class="disclaimer-inline">
-      ⚠️ <strong>Conteúdo educativo baseado em material público da CPL 4 de Ana Brez.</strong> As marcações "OK" ou "Revisar" são heurísticas automáticas sobre os dados cadastrados — <strong>não são recomendação de investimento, não sugerem compra/venda de ativos</strong> e não garantem nenhum resultado. A análise de cada caso concreto cabe a profissional habilitado.
+      ⚠️ <strong>Conteúdo educativo apenas.</strong> Os tópicos abaixo descrevem erros que costumam aparecer com frequência em carteiras pessoais. <strong>Esta seção não analisa, avalia nem faz qualquer julgamento sobre seus ativos.</strong> Não é recomendação, sugestão ou diagnóstico.
     </div>
     <div id="erroChecklist"></div>
   </div>
@@ -870,77 +870,41 @@ function renderRaiox(){
 // RENDER — 6 ERROS (análise automática)
 // ============================================================
 function renderErros(){
-  const c = calc();
-  const erros = [];
-
-  // Erro 1 — Banco grande
-  const bancosGrandes = ['Itaú','Bradesco','Santander','BB','Banco do Brasil','Caixa'];
-  const totalBG = c.ativos.filter(a=>bancosGrandes.some(b=>(a.corretora||'').toLowerCase().includes(b.toLowerCase()))).reduce((s,a)=>s+(+a.atual||+a.investido||0),0);
-  const pctBG = c.totalAtual>0 ? totalBG/c.totalAtual : 0;
-  erros.push({
-    num:1, titulo:'Produto de banco grande por comodidade',
-    desc:'Gerente liga, oferece fundo com taxa de 2-3% que come sua rentabilidade.',
-    risco: pctBG > 0.3, pctOuInfo: pctBG>0?`${pct0(pctBG)} da carteira em banco grande`:'Nenhum ativo em banco grande ✓'
-  });
-
-  // Erro 2 — CDI alto sem solidez (heurística: CDB em corretora pequena)
-  const fintechs = ['Nubank','Inter','C6','Will','Neon','PicPay','Banco Master'];
-  const cdbs = c.ativos.filter(a=>a.tipo==='CDB');
-  const cdbsFintech = cdbs.filter(a=>fintechs.some(f=>(a.corretora||'').toLowerCase().includes(f.toLowerCase())));
-  const totalCdbFintech = cdbsFintech.reduce((s,a)=>s+(+a.atual||+a.investido||0),0);
-  const riscoCDI = totalCdbFintech > 250000; // FGC cobre 250k
-  erros.push({
-    num:2, titulo:'Correr atrás do CDI mais alto sem olhar solidez',
-    desc:'CDB de fintech pagando 120% do CDI parece ótimo. Mas acima de R$ 250k não tem FGC cobrindo.',
-    risco: riscoCDI, pctOuInfo: totalCdbFintech>0?`${fmt(totalCdbFintech)} em CDBs de fintech/banco digital${riscoCDI?' — ALÉM do limite FGC':''}`:'Sem CDB em fintech ✓'
-  });
-
-  // Erro 3 — Fugir do Tesouro
-  const tesouro = c.ativos.filter(a=>a.tipo.includes('Tesouro')).reduce((s,a)=>s+(+a.atual||+a.investido||0),0);
-  const pctTesouro = c.totalAtual>0 ? tesouro/c.totalAtual : 0;
-  erros.push({
-    num:3, titulo:'Fugir do Tesouro achando que é coisa de conservador',
-    desc:'Tesouro IPCA+ com 6%+ de juro real travado por 20 anos é uma das melhores decisões possíveis.',
-    risco: pctTesouro < 0.05 && c.totalAtual > 20000, pctOuInfo: tesouro>0?`${pct0(pctTesouro)} em Tesouro (${fmt(tesouro)})`:'Nenhum Tesouro na carteira'
-  });
-
-  // Erro 4 — Previdência em mãos erradas
-  const prev = c.ativos.filter(a=>a.tipo==='Previdência');
-  const prevBancoGrande = prev.filter(a=>bancosGrandes.some(b=>(a.corretora||'').toLowerCase().includes(b.toLowerCase())));
-  erros.push({
-    num:4, titulo:'Previdência nas mãos de quem não entende',
-    desc:'Previdência de banco geralmente tem taxa de 2-3% + carregamento. Melhor em corretora específica.',
-    risco: prevBancoGrande.length > 0, pctOuInfo: prev.length>0?`${prev.length} previdência(s) — ${prevBancoGrande.length>0?'algumas em banco grande ⚠️':'tudo em corretora ✓'}`:'Sem previdência cadastrada'
-  });
-
-  // Erro 5 — Excesso de dólar/internacional
-  const intl = c.ativos.filter(a=>a.tipo.includes('Internacional')).reduce((s,a)=>s+(+a.atual||+a.investido||0),0);
-  const pctIntl = c.totalAtual>0 ? intl/c.totalAtual : 0;
-  erros.push({
-    num:5, titulo:'Achar que dólar resolve tudo',
-    desc:'Dólar protege, mas não é blindagem total. Carteira muito dolarizada corre outro tipo de risco.',
-    risco: pctIntl > 0.5, pctOuInfo: intl>0?`${pct0(pctIntl)} em ativos internacionais${pctIntl>0.5?' — possivelmente excessivo':''}`:'Sem exposição internacional'
-  });
-
-  // Erro 6 — Carteira Frankenstein (muitos tipos)
-  const qtdTipos = Object.keys(c.porTipo).length;
-  const qtdAtivos = c.ativos.length;
-  const riscoFrank = qtdAtivos > 15 || (qtdTipos > 8 && c.totalAtual < 200000);
-  erros.push({
-    num:6, titulo:'Carteira lotada de nomes difíceis achando que é diversificação',
-    desc:'Ter 10 siglas diferentes ≠ diversificar. É coleção de sigla. Diversificar é distribuir risco com critério.',
-    risco: riscoFrank, pctOuInfo: `${qtdAtivos} ativos em ${qtdTipos} tipos diferentes${riscoFrank?' — pode estar disperso demais':''}`
-  });
+  // Conteúdo puramente educativo — sem qualquer análise sobre a carteira do usuário
+  const erros = [
+    {
+      num:1, titulo:'Comprar produto de banco grande por comodidade',
+      desc:'Gerente liga, oferece o fundo da casa, parece seguro. Taxas de 2-3% em produtos que rendem 10% sobram pouco no bolso do investidor. Comodidade costuma sair caro no longo prazo.'
+    },
+    {
+      num:2, titulo:'Correr atrás do CDI mais alto sem olhar a solidez',
+      desc:'"Paga 150% do CDI!" parece ótimo. Mas qual o porte da instituição? Qual o histórico? O FGC cobre até R$ 250 mil por CPF por instituição. Rendimento alto sem olhar quem está pagando é armadilha histórica.'
+    },
+    {
+      num:3, titulo:'Fugir do Tesouro achando que é coisa de conservador',
+      desc:'O Tesouro costuma ser visto como "chato". Mas travar juro real de 6%+ com garantia do Tesouro Nacional é uma das ferramentas mais poderosas pra quem quer previsibilidade e segurança de longo prazo.'
+    },
+    {
+      num:4, titulo:'Colocar previdência nas mãos de quem não entende',
+      desc:'Previdência é decisão de 10, 20, 30 anos. Uma previdência com taxa alta e fundo ruim escolhida numa tarde pode custar caro por décadas. Previdência boa existe, mas exige olhar com calma.'
+    },
+    {
+      num:5, titulo:'Achar que dólar resolve tudo',
+      desc:'Dólar é ferramenta de proteção, não solução única. Encher a carteira de dólar achando que está blindado pode, em alguns momentos, aumentar o risco em vez de reduzir. O momento importa.'
+    },
+    {
+      num:6, titulo:'Carteira lotada de nomes difíceis achando que é diversificação',
+      desc:'Ter 10 siglas diferentes não é diversificar — é colecionar. Diversificação de verdade é distribuir risco com critério entre classes, não empilhar produtos porque "parece sofisticado".'
+    }
+  ];
 
   $('erroChecklist').innerHTML = erros.map(e=>`
-    <div class="erro-item ${e.risco?'risco':'ok'}">
+    <div class="erro-item" style="cursor:default">
       <div class="erro-head">
         <span class="erro-num">ERRO ${e.num}</span>
         <span class="erro-titulo">${e.titulo}</span>
-        <span class="erro-status" style="color:${e.risco?'var(--red)':'var(--green)'}">${e.risco?'⚠ Revisar':'✓ OK'}</span>
       </div>
       <div class="erro-desc">${e.desc}</div>
-      <div style="margin-top:8px;padding:6px 10px;background:rgba(255,255,255,0.5);border-radius:var(--radius-sm);font-size:12px"><strong>Sua carteira:</strong> ${e.pctOuInfo}</div>
     </div>
   `).join('');
 }
