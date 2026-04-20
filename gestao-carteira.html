@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestão de Carteira — Ana Brez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --gold:#C9A84C; --gold-dark:#A07E2E; --gold-bg:#FBF5E6;
+  --navy:#0D1B2A; --navy-2:#1B3A5C; --navy-3:#24486E;
+  --green:#5B9A3C; --green-dark:#3B6A2C; --green-bg:#E8F5DC;
+  --red:#C0392B; --red-bg:#FDEDEC;
+  --blue:#45AAF2; --blue-bg:#E8F4FC;
+  --orange:#FF9F43; --orange-bg:#FFF0D9;
+  --bg:#F7F6F2; --surface:#FFFFFF; --gray-light:#F0EFE9; --gray:#D8D7D1;
+  --text:#1A1A2E; --text-muted:#6B7280;
+  --shadow:0 2px 12px rgba(13,27,42,0.08);
+  --shadow-lg:0 8px 32px rgba(13,27,42,0.12);
+  --radius:12px; --radius-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+.container{max-width:1280px;margin:0 auto;padding:20px}
+
+/* HEADER */
+header{background:var(--navy);color:#fff;padding:18px 24px;display:flex;align-items:center;gap:20px;box-shadow:var(--shadow);position:sticky;top:0;z-index:50}
+.logo{font-size:20px;font-weight:700;color:var(--gold);letter-spacing:0.5px}
+.logo span{color:#fff;font-weight:400;margin-left:8px;font-size:14px;opacity:0.8}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.chip{background:rgba(255,255,255,0.1);padding:4px 12px;border-radius:20px;font-size:12px;color:#fff}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--surface);padding:6px;border-radius:var(--radius);margin:20px 0 24px;box-shadow:var(--shadow);overflow-x:auto}
+.tab{padding:10px 18px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:14px;font-weight:500;color:var(--text-muted);border-radius:var(--radius-sm);white-space:nowrap;transition:all 0.15s}
+.tab:hover{background:var(--gray-light);color:var(--text)}
+.tab.active{background:var(--navy);color:var(--gold)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* CARDS */
+.card{background:var(--surface);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);margin-bottom:20px}
+.card-title{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-subtitle{font-size:12px;color:var(--text-muted);margin-bottom:14px}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--surface);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-left:4px solid var(--gold);position:relative;overflow:hidden}
+.kpi.green{border-left-color:var(--green)}
+.kpi.blue{border-left-color:var(--blue)}
+.kpi.red{border-left-color:var(--red)}
+.kpi.orange{border-left-color:var(--orange)}
+.kpi-label{font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px;font-weight:600}
+.kpi-value{font-size:26px;font-weight:700;color:var(--navy);line-height:1.15}
+.kpi-sub{font-size:12px;color:var(--text-muted);margin-top:4px}
+.kpi-sub.up{color:var(--green)}
+.kpi-sub.down{color:var(--red)}
+
+/* BLOCOS DA ANA */
+.blocos-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+@media (max-width:768px){.blocos-wrap{grid-template-columns:1fr}}
+.bloco-card{background:var(--surface);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-top:4px solid var(--gold)}
+.bloco-card.preservacao{border-top-color:var(--blue)}
+.bloco-card.equilibrio{border-top-color:var(--gold)}
+.bloco-card.crescimento{border-top-color:var(--green)}
+.bloco-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.bloco-nome{font-size:14px;font-weight:700;color:var(--navy)}
+.bloco-pct{font-size:22px;font-weight:700;color:var(--navy)}
+.bloco-desc{font-size:11px;color:var(--text-muted);margin-bottom:8px;line-height:1.4}
+.bloco-bar{height:6px;background:var(--gray-light);border-radius:3px;overflow:hidden;margin:6px 0 4px}
+.bloco-bar-fill{height:100%;transition:width 0.4s}
+.bloco-card.preservacao .bloco-bar-fill{background:var(--blue)}
+.bloco-card.equilibrio .bloco-bar-fill{background:var(--gold)}
+.bloco-card.crescimento .bloco-bar-fill{background:var(--green)}
+.bloco-valor{font-size:13px;color:var(--text)}
+.bloco-meta{font-size:11px;color:var(--text-muted);margin-top:6px}
+
+/* TABELA */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--gray-light)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--navy);color:var(--gold);padding:10px 12px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;position:sticky;top:0}
+td{padding:10px 12px;border-bottom:1px solid var(--gray-light);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gold-bg)}
+.td-num{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.td-center{text-align:center}
+.td-mini{font-size:11px;color:var(--text-muted)}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px}
+.badge.preservacao{background:var(--blue-bg);color:var(--blue)}
+.badge.equilibrio{background:var(--gold-bg);color:var(--gold-dark)}
+.badge.crescimento{background:var(--green-bg);color:var(--green-dark)}
+.badge.gray{background:var(--gray-light);color:var(--text-muted)}
+
+/* FORMS */
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:12px}
+.form-group{display:flex;flex-direction:column}
+label{font-size:12px;font-weight:600;color:var(--navy);margin-bottom:4px}
+input,select,textarea{padding:8px 10px;border:1px solid var(--gray);border-radius:var(--radius-sm);font-family:inherit;font-size:13px;background:var(--surface);width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:-1px;border-color:var(--gold)}
+.hint{font-size:11px;color:var(--text-muted);margin-top:3px}
+
+/* BTN */
+.btn{padding:8px 16px;border:none;border-radius:var(--radius-sm);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;display:inline-flex;align-items:center;gap:6px}
+.btn.primary{background:var(--gold);color:var(--navy)}
+.btn.primary:hover{background:var(--gold-dark);color:#fff}
+.btn.secondary{background:var(--gray-light);color:var(--text)}
+.btn.secondary:hover{background:var(--gray)}
+.btn.navy{background:var(--navy);color:var(--gold)}
+.btn.navy:hover{background:var(--navy-2)}
+.btn.danger{background:var(--red-bg);color:var(--red)}
+.btn.danger:hover{background:var(--red);color:#fff}
+.btn.xs{padding:4px 10px;font-size:11px}
+
+/* CHARTS */
+.chart-wrap{height:280px;position:relative}
+.chart-wrap-small{height:200px;position:relative}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(13,27,42,0.5);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius);max-width:640px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-head{padding:20px 24px;border-bottom:1px solid var(--gray-light);display:flex;justify-content:space-between;align-items:center}
+.modal-body{padding:20px 24px}
+.modal-foot{padding:14px 24px;border-top:1px solid var(--gray-light);display:flex;gap:10px;justify-content:flex-end}
+.modal-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-muted);padding:4px 8px;border-radius:4px}
+.modal-close:hover{background:var(--gray-light)}
+
+/* ALERTAS */
+.alert{padding:12px 16px;border-radius:var(--radius-sm);display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;font-size:13px;line-height:1.5}
+.alert.red{background:var(--red-bg);color:var(--red);border-left:3px solid var(--red)}
+.alert.orange{background:var(--orange-bg);color:#a85d00;border-left:3px solid var(--orange)}
+.alert.green{background:var(--green-bg);color:var(--green-dark);border-left:3px solid var(--green)}
+.alert.blue{background:var(--blue-bg);color:var(--navy-3);border-left:3px solid var(--blue)}
+.alert-icon{font-size:18px;flex-shrink:0}
+
+/* CHECKLIST ERROS */
+.erro-item{padding:14px;border-radius:var(--radius-sm);border-left:4px solid var(--gray);background:var(--surface);margin-bottom:10px;cursor:pointer;transition:all 0.15s}
+.erro-item:hover{box-shadow:var(--shadow)}
+.erro-item.risco{border-left-color:var(--red);background:var(--red-bg)}
+.erro-item.ok{border-left-color:var(--green);background:var(--green-bg)}
+.erro-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.erro-num{background:var(--navy);color:var(--gold);font-weight:700;font-size:11px;padding:3px 8px;border-radius:4px;font-family:monospace}
+.erro-item.risco .erro-num{background:var(--red);color:#fff}
+.erro-item.ok .erro-num{background:var(--green);color:#fff}
+.erro-titulo{font-weight:600;font-size:14px;flex:1}
+.erro-status{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+.erro-desc{font-size:12px;color:var(--text-muted);line-height:1.5}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--text-muted)}
+.empty-icon{font-size:42px;margin-bottom:10px;opacity:0.4}
+.empty h3{color:var(--navy);margin-bottom:6px;font-size:16px}
+.empty p{font-size:13px;max-width:360px;margin:0 auto 16px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 18px;background:var(--navy);color:#fff;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:200;opacity:0;transform:translateY(20px);transition:all 0.2s}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.error{background:var(--red)}
+.toast.success{background:var(--green)}
+
+/* WELCOME */
+.welcome{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;padding:24px;border-radius:var(--radius);margin-bottom:20px;position:relative;overflow:hidden}
+.welcome h2{color:var(--gold);font-size:22px;margin-bottom:8px}
+.welcome p{opacity:0.9;line-height:1.6;font-size:14px}
+.welcome .close-welcome{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.1);color:#fff;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px}
+
+/* FOOTER */
+footer{text-align:center;padding:30px 20px;color:var(--text-muted);font-size:12px;line-height:1.6}
+footer a{color:var(--gold-dark);text-decoration:none}
+
+/* UTIL */
+.row-actions{display:flex;gap:4px}
+.hidden{display:none!important}
+.text-small{font-size:12px}
+.text-muted{color:var(--text-muted)}
+.text-right{text-align:right}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">RIQZ <span>Gestão de Carteira — Ana Brez</span></div>
+  <div class="header-right">
+    <span class="chip" id="dataChip">📅 Abril/2026</span>
+    <button class="btn secondary xs" onclick="carregarDemo()">🎯 Dados de exemplo</button>
+  </div>
+</header>
+
+<div class="container">
+
+<div class="welcome" id="welcome">
+  <button class="close-welcome" onclick="fecharWelcome()">✕</button>
+  <h2>Sua carteira sob a metodologia Ana Brez</h2>
+  <p>Cadastre cada ativo que você tem. O sistema classifica automaticamente em <strong style="color:var(--gold)">Preservação → Equilíbrio → Crescimento</strong> (os 3 blocos da CPL 3), mostra concentração, alerta sobre os <strong style="color:var(--gold)">6 erros comuns</strong> da CPL 4 e calcula seu patrimônio total + renda passiva.</p>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+  <button class="tab" onclick="switchTab('carteira')">💼 Meus Ativos</button>
+  <button class="tab" onclick="switchTab('raiox')">🔍 Raio-X</button>
+  <button class="tab" onclick="switchTab('erros')">⚠️ 6 Erros</button>
+  <button class="tab" onclick="switchTab('proventos')">💰 Proventos</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="tab-content active" id="tab-dashboard">
+  <div class="kpi-grid" id="kpis"></div>
+  <div class="blocos-wrap" id="blocos"></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📊 Distribuição por Bloco</div>
+      <div class="chart-wrap"><canvas id="chartBlocos"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🧩 Distribuição por Tipo</div>
+      <div class="chart-wrap"><canvas id="chartTipos"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📈 Evolução do Patrimônio</div>
+    <div class="card-subtitle">Você pode editar os valores mensais para acompanhar a evolução real</div>
+    <div id="evolucaoEditor"></div>
+    <div class="chart-wrap"><canvas id="chartEvolucao"></canvas></div>
+  </div>
+</div>
+
+<!-- CARTEIRA -->
+<div class="tab-content" id="tab-carteira">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="card-title" style="margin:0">💼 Meus Ativos</div>
+        <div class="card-subtitle" style="margin:4px 0 0">Cadastre cada investimento que você tem</div>
+      </div>
+      <button class="btn primary" onclick="abrirModalAtivo()">+ Adicionar ativo</button>
+    </div>
+    <div id="carteiraTable"></div>
+  </div>
+</div>
+
+<!-- RAIO-X -->
+<div class="tab-content" id="tab-raiox">
+  <div class="card">
+    <div class="card-title">🎯 Diagnóstico da sua carteira</div>
+    <div class="card-subtitle">Análise automática baseada na metodologia Ana Brez</div>
+    <div id="alertas"></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📊 Concentração por Corretora</div>
+      <div class="chart-wrap"><canvas id="chartCorretoras"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💧 Liquidez</div>
+      <div class="chart-wrap"><canvas id="chartLiquidez"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏆 Top 10 ativos (% da carteira)</div>
+    <div id="topAtivos"></div>
+  </div>
+</div>
+
+<!-- 6 ERROS -->
+<div class="tab-content" id="tab-erros">
+  <div class="card">
+    <div class="card-title">⚠️ Os 6 erros mais comuns (CPL 4 — Ana Brez)</div>
+    <div class="card-subtitle">Sistema analisa sua carteira e identifica automaticamente quais erros você pode estar cometendo</div>
+    <div id="erroChecklist"></div>
+  </div>
+</div>
+
+<!-- PROVENTOS -->
+<div class="tab-content" id="tab-proventos">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="card-title" style="margin:0">💰 Proventos Recebidos</div>
+        <div class="card-subtitle" style="margin:4px 0 0">Dividendos + JCP + Aluguéis de FII — base pro cálculo de renda passiva</div>
+      </div>
+      <button class="btn primary" onclick="abrirModalProvento()">+ Registrar provento</button>
+    </div>
+    <div id="proventosTable"></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📅 Proventos por mês</div>
+      <div class="chart-wrap"><canvas id="chartProventos"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 Renda passiva projetada</div>
+      <div id="projecaoRenda"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- MODAL ATIVO -->
+<div class="modal-overlay" id="modalAtivo">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalAtivoTitle">Novo ativo</h3>
+      <button class="modal-close" onclick="fecharModalAtivo()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ativoId">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome do ativo *</label>
+          <input type="text" id="ativoNome" placeholder="Ex: ITSA4, KDIF11, Tesouro IPCA+ 2035">
+        </div>
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select id="ativoTipo" onchange="sugerirBloco()">
+            <option value="">Selecione...</option>
+            <optgroup label="Preservação">
+              <option value="Reserva">💧 Reserva/Conta</option>
+              <option value="CDB">🏦 CDB</option>
+              <option value="Tesouro Selic">📄 Tesouro Selic</option>
+              <option value="LCI/LCA">🏠 LCI/LCA</option>
+            </optgroup>
+            <optgroup label="Equilíbrio">
+              <option value="Tesouro IPCA+">📈 Tesouro IPCA+</option>
+              <option value="Tesouro Prefixado">📉 Tesouro Prefixado</option>
+              <option value="Previdência">🛡️ Previdência (PGBL/VGBL)</option>
+              <option value="Debênture">📋 Debênture</option>
+              <option value="Fundo DI/RF">💼 Fundo DI/RF</option>
+            </optgroup>
+            <optgroup label="Crescimento">
+              <option value="Ação BR">📊 Ação Brasileira</option>
+              <option value="FII">🏢 FII</option>
+              <option value="ETF BR">📦 ETF Brasil</option>
+              <option value="ETF Internacional">🌎 ETF Internacional</option>
+              <option value="Ação Internacional">🌍 Ação Internacional</option>
+              <option value="Fundo Imobiliário">🏗️ Fundo Imobiliário</option>
+              <option value="Cripto">₿ Cripto</option>
+              <option value="Outros">❓ Outros</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bloco *</label>
+          <select id="ativoBloco">
+            <option value="Preservação">💧 Preservação</option>
+            <option value="Equilíbrio" selected>⚖️ Equilíbrio</option>
+            <option value="Crescimento">🚀 Crescimento</option>
+          </select>
+          <div class="hint">Ajustado automaticamente pelo tipo</div>
+        </div>
+        <div class="form-group">
+          <label>Corretora/Banco</label>
+          <input type="text" id="ativoCorretora" placeholder="Ex: BTG, XP, Nubank, Inter" list="corretoraList">
+          <datalist id="corretoraList">
+            <option value="BTG"><option value="XP"><option value="Rico"><option value="Clear">
+            <option value="NuInvest"><option value="Inter"><option value="Itaú"><option value="Bradesco">
+            <option value="Nubank"><option value="C6"><option value="Avenue"><option value="Binance">
+          </datalist>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Valor investido (R$) *</label>
+          <input type="number" step="0.01" id="ativoInvestido" placeholder="10000">
+          <div class="hint">Quanto você pôs nesse ativo</div>
+        </div>
+        <div class="form-group">
+          <label>Valor atual (R$)</label>
+          <input type="number" step="0.01" id="ativoAtual" placeholder="10500">
+          <div class="hint">Valor de mercado hoje (se vazio, usa o investido)</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Provento mensal (R$)</label>
+          <input type="number" step="0.01" id="ativoProvento" placeholder="50">
+          <div class="hint">Dividendo/JCP/aluguel médio por mês (0 se não tem)</div>
+        </div>
+        <div class="form-group">
+          <label>Data da compra</label>
+          <input type="date" id="ativoData">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="grid-column:1/-1">
+          <label>Notas (opcional)</label>
+          <textarea id="ativoNotas" rows="2" placeholder="Ex: vencimento 2035, taxa 2%, comprado na baixa do IFIX"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn danger" onclick="excluirAtivo()" id="btnExcluirAtivo" style="margin-right:auto;display:none">🗑 Excluir</button>
+      <button class="btn secondary" onclick="fecharModalAtivo()">Cancelar</button>
+      <button class="btn primary" onclick="salvarAtivo()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROVENTO -->
+<div class="modal-overlay" id="modalProvento">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Registrar provento recebido</h3>
+      <button class="modal-close" onclick="fecharModalProvento()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ativo *</label>
+          <select id="provAtivo"></select>
+        </div>
+        <div class="form-group">
+          <label>Data *</label>
+          <input type="date" id="provData">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo *</label>
+          <select id="provTipo">
+            <option>Dividendo</option>
+            <option>JCP</option>
+            <option>Aluguel FII</option>
+            <option>Cupom (Tesouro/Debênture)</option>
+            <option>Bonificação</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor (R$) *</label>
+          <input type="number" step="0.01" id="provValor">
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn secondary" onclick="fecharModalProvento()">Cancelar</button>
+      <button class="btn primary" onclick="salvarProvento()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  Metodologia baseada em <strong>Ana Brez</strong> — Método Riqueza (CPL 3: 3 blocos; CPL 4: 6 erros).<br>
+  Educação financeira, não recomendação. <a href="planilha-magica.html">Planilha Mágica</a> · <a href="index.html">Controle de Gastos</a>
+</footer>
+
+<script>
+// ============================================================
+// DADOS & PERSISTÊNCIA
+// ============================================================
+const STORAGE_KEY = 'gestaoCarteira_v1';
+const BLOCO_POR_TIPO = {
+  'Reserva':'Preservação','CDB':'Preservação','Tesouro Selic':'Preservação','LCI/LCA':'Preservação',
+  'Tesouro IPCA+':'Equilíbrio','Tesouro Prefixado':'Equilíbrio','Previdência':'Equilíbrio','Debênture':'Equilíbrio','Fundo DI/RF':'Equilíbrio',
+  'Ação BR':'Crescimento','FII':'Crescimento','ETF BR':'Crescimento','ETF Internacional':'Crescimento','Ação Internacional':'Crescimento','Fundo Imobiliário':'Crescimento','Cripto':'Crescimento','Outros':'Crescimento'
+};
+
+// Alvos % por perfil (inspirado no exemplo R$ 250k da CPL 4, ajustado)
+const ALVO_BLOCOS = {
+  'Conservador': {'Preservação':50,'Equilíbrio':40,'Crescimento':10},
+  'Moderado':    {'Preservação':30,'Equilíbrio':45,'Crescimento':25},
+  'Arrojado':    {'Preservação':20,'Equilíbrio':35,'Crescimento':45}
+};
+
+let D = { ativos:[], proventos:[], evolucao:{}, perfil:'Moderado', welcomeClosed:false };
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) D = Object.assign(D, JSON.parse(raw));
+  }catch(e){console.warn('load error',e)}
+}
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(D)); }
+
+// ============================================================
+// UTIL
+// ============================================================
+function $(id){return document.getElementById(id)}
+function fmt(v){return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0})}
+function fmt2(v){return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function pct(v){return (Number(v||0)*100).toFixed(1)+'%'}
+function pct0(v){return Math.round(Number(v||0)*100)+'%'}
+function genId(){return 'a'+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
+function toast(msg, kind){
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (kind||'');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+// ============================================================
+// CÁLCULOS
+// ============================================================
+function calc(){
+  const ativos = D.ativos || [];
+  const totalInvestido = ativos.reduce((a,x)=>a+(+x.investido||0),0);
+  const totalAtual = ativos.reduce((a,x)=>a+(+x.atual||+x.investido||0),0);
+  const rentabilidade = totalInvestido>0 ? (totalAtual-totalInvestido)/totalInvestido : 0;
+  const proventoMensal = ativos.reduce((a,x)=>a+(+x.provento||0),0);
+  const proventoAnual = proventoMensal*12;
+  const dy = totalAtual>0 ? proventoAnual/totalAtual : 0;
+
+  const porBloco = {};
+  const porTipo = {};
+  const porCorretora = {};
+  ativos.forEach(a=>{
+    const v = +a.atual || +a.investido || 0;
+    porBloco[a.bloco] = (porBloco[a.bloco]||0) + v;
+    porTipo[a.tipo] = (porTipo[a.tipo]||0) + v;
+    const c = a.corretora||'Sem corretora';
+    porCorretora[c] = (porCorretora[c]||0) + v;
+  });
+
+  // % por bloco
+  const pctBloco = {};
+  Object.keys(porBloco).forEach(k=>pctBloco[k] = totalAtual>0 ? porBloco[k]/totalAtual : 0);
+
+  // Liquidez: Preservação=alta, Equilíbrio=média, Crescimento=baixa (aproximação)
+  const liqMap = {'Preservação':'Alta','Equilíbrio':'Média','Crescimento':'Baixa'};
+  const porLiquidez = {Alta:0, Média:0, Baixa:0};
+  ativos.forEach(a=>{
+    const v = +a.atual || +a.investido || 0;
+    porLiquidez[liqMap[a.bloco]||'Média'] += v;
+  });
+
+  return {totalInvestido, totalAtual, rentabilidade, proventoMensal, proventoAnual, dy, porBloco, pctBloco, porTipo, porCorretora, porLiquidez, ativos};
+}
+
+// ============================================================
+// RENDER — DASHBOARD
+// ============================================================
+let chartBlocos, chartTipos, chartEvolucao, chartCorretoras, chartLiquidez, chartProventos;
+
+function renderDashboard(){
+  const c = calc();
+  const pct1 = c.rentabilidade;
+  const topCorretora = Object.entries(c.porCorretora).sort((a,b)=>b[1]-a[1])[0];
+  const concPct = c.totalAtual>0 && topCorretora ? (topCorretora[1]/c.totalAtual) : 0;
+
+  $('kpis').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">💰 Patrimônio Total</div>
+      <div class="kpi-value">${fmt(c.totalAtual)}</div>
+      <div class="kpi-sub">${D.ativos.length} ativos cadastrados</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">📈 Rentabilidade</div>
+      <div class="kpi-value">${pct1>=0?'+':''}${pct(pct1)}</div>
+      <div class="kpi-sub ${pct1>=0?'up':'down'}">${pct1>=0?'+':''}${fmt(c.totalAtual-c.totalInvestido)} sobre ${fmt(c.totalInvestido)}</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-label">💵 Renda Passiva</div>
+      <div class="kpi-value">${fmt(c.proventoMensal)}</div>
+      <div class="kpi-sub">/mês · ${fmt(c.proventoAnual)} /ano</div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">📊 Div. Yield Carteira</div>
+      <div class="kpi-value">${pct(c.dy)}</div>
+      <div class="kpi-sub">ao ano</div>
+    </div>
+  `;
+
+  // Blocos
+  const alvo = ALVO_BLOCOS[D.perfil] || ALVO_BLOCOS['Moderado'];
+  const blocosHtml = ['Preservação','Equilíbrio','Crescimento'].map(b=>{
+    const pctAtual = Math.round((c.pctBloco[b]||0)*100);
+    const pctAlvo = alvo[b];
+    const valor = c.porBloco[b]||0;
+    const cls = b === 'Preservação' ? 'preservacao' : b === 'Equilíbrio' ? 'equilibrio' : 'crescimento';
+    const diff = pctAtual - pctAlvo;
+    const diffTxt = Math.abs(diff) < 5 ? '✓ alinhado com alvo' : diff > 0 ? `↑ ${diff}pp acima do alvo` : `↓ ${Math.abs(diff)}pp abaixo do alvo`;
+    const diffCls = Math.abs(diff) < 5 ? 'text-muted' : 'text-muted';
+    const desc = b === 'Preservação' ? 'Reserva + curto prazo + liquidez' : b === 'Equilíbrio' ? 'Tesouro IPCA+, previdência, RF longa' : 'Ações, FIIs, ETF, dólar';
+    return `<div class="bloco-card ${cls}">
+      <div class="bloco-head"><span class="bloco-nome">${b}</span><span class="bloco-pct">${pctAtual}%</span></div>
+      <div class="bloco-desc">${desc}</div>
+      <div class="bloco-bar"><div class="bloco-bar-fill" style="width:${Math.min(100,pctAtual)}%"></div></div>
+      <div class="bloco-valor">${fmt(valor)} · alvo ${pctAlvo}%</div>
+      <div class="bloco-meta ${diffCls}">${diffTxt}</div>
+    </div>`;
+  }).join('');
+  $('blocos').innerHTML = blocosHtml;
+
+  // Chart blocos (doughnut)
+  if(chartBlocos) chartBlocos.destroy();
+  const bl = Object.entries(c.porBloco);
+  if(bl.length){
+    chartBlocos = new Chart($('chartBlocos'),{
+      type:'doughnut',
+      data:{
+        labels: bl.map(x=>x[0]),
+        datasets:[{data: bl.map(x=>x[1]), backgroundColor:['#45AAF2','#C9A84C','#5B9A3C'], borderWidth:0}]
+      },
+      options:{responsive:true, maintainAspectRatio:false, cutout:'60%',
+        plugins:{legend:{position:'bottom', labels:{font:{family:'Open Sans',size:12}}},
+          tooltip:{callbacks:{label:(ctx)=>ctx.label+': '+fmt(ctx.parsed)+' ('+Math.round(ctx.parsed/c.totalAtual*100)+'%)'}}}}
+    });
+  }
+
+  // Chart tipos (bar horizontal)
+  if(chartTipos) chartTipos.destroy();
+  const tps = Object.entries(c.porTipo).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(tps.length){
+    chartTipos = new Chart($('chartTipos'),{
+      type:'bar',
+      data:{labels:tps.map(x=>x[0]), datasets:[{data:tps.map(x=>x[1]), backgroundColor:'#C9A84C',borderRadius:4}]},
+      options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>fmt(ctx.parsed.x)}}},
+        scales:{x:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v}}}}
+    });
+  }
+
+  renderEvolucao(c);
+}
+
+function renderEvolucao(c){
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const anoAtual = new Date().getFullYear();
+  const evol = D.evolucao[anoAtual] || Array(12).fill(0);
+  // injeta mês atual automático se vazio
+  const mesAtual = new Date().getMonth();
+  if(!evol[mesAtual]) evol[mesAtual] = c.totalAtual;
+
+  const inputs = meses.map((m,i)=>{
+    return `<div style="display:flex;flex-direction:column;min-width:68px">
+      <label style="font-size:10px;color:var(--text-muted);text-transform:uppercase">${m}</label>
+      <input type="number" value="${evol[i]||''}" placeholder="0" style="padding:6px 8px;font-size:12px"
+        onchange="setEvolucao(${i}, this.value)">
+    </div>`;
+  }).join('');
+  $('evolucaoEditor').innerHTML = `<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:10px;margin-bottom:14px">${inputs}</div>`;
+
+  if(chartEvolucao) chartEvolucao.destroy();
+  chartEvolucao = new Chart($('chartEvolucao'),{
+    type:'line',
+    data:{labels:meses, datasets:[{label:'Patrimônio', data: evol.map(v=>v||null), borderColor:'#C9A84C', backgroundColor:'rgba(201,168,76,0.12)', fill:true, tension:0.3, borderWidth:2, pointRadius:3, spanGaps:true}]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>fmt(ctx.parsed.y)}}},
+      scales:{y:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v}}}}
+  });
+}
+
+function setEvolucao(mes, val){
+  const ano = new Date().getFullYear();
+  if(!D.evolucao[ano]) D.evolucao[ano] = Array(12).fill(0);
+  D.evolucao[ano][mes] = parseFloat(val)||0;
+  save();
+  renderDashboard();
+}
+
+// ============================================================
+// RENDER — CARTEIRA (tabela)
+// ============================================================
+function renderCarteira(){
+  const a = D.ativos || [];
+  if(!a.length){
+    $('carteiraTable').innerHTML = `<div class="empty"><div class="empty-icon">💼</div><h3>Nenhum ativo ainda</h3><p>Comece adicionando seus investimentos um por um. Você pode começar com sua reserva de emergência.</p><button class="btn primary" onclick="abrirModalAtivo()">+ Adicionar primeiro ativo</button> <button class="btn secondary" onclick="carregarDemo()">🎯 Ver exemplo</button></div>`;
+    return;
+  }
+  const sorted = [...a].sort((x,y)=>(+y.atual||+y.investido||0) - (+x.atual||+x.investido||0));
+  const total = sorted.reduce((acc,x)=>acc+(+x.atual||+x.investido||0),0);
+  const rows = sorted.map(x=>{
+    const v = +x.atual || +x.investido || 0;
+    const inv = +x.investido || 0;
+    const rent = inv>0 ? (v-inv)/inv : 0;
+    const p = total>0 ? v/total*100 : 0;
+    const clsBloco = x.bloco === 'Preservação' ? 'preservacao' : x.bloco === 'Equilíbrio' ? 'equilibrio' : 'crescimento';
+    const rentClr = rent>=0?'var(--green)':'var(--red)';
+    return `<tr>
+      <td><div style="font-weight:600">${x.nome}</div><div class="td-mini">${x.tipo}${x.corretora?' · '+x.corretora:''}</div></td>
+      <td><span class="badge ${clsBloco}">${x.bloco}</span></td>
+      <td class="td-num">${fmt(inv)}</td>
+      <td class="td-num">${fmt(v)}</td>
+      <td class="td-num" style="color:${rentClr}">${rent>=0?'+':''}${pct(rent)}</td>
+      <td class="td-num">${fmt(x.provento||0)}</td>
+      <td class="td-num">${p.toFixed(1)}%</td>
+      <td class="td-center"><button class="btn xs secondary" onclick="abrirModalAtivo('${x.id}')">✎</button></td>
+    </tr>`;
+  }).join('');
+  $('carteiraTable').innerHTML = `<div class="table-wrap"><table>
+    <thead><tr><th>Ativo</th><th>Bloco</th><th>Investido</th><th>Atual</th><th>Rent.</th><th>Prov/mês</th><th>% Cart.</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+// ============================================================
+// RENDER — RAIO-X
+// ============================================================
+function renderRaiox(){
+  const c = calc();
+  if(!c.ativos.length){ $('alertas').innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><h3>Adicione ativos pra ver o diagnóstico</h3></div>'; return; }
+
+  const alvo = ALVO_BLOCOS[D.perfil];
+  const alerts = [];
+
+  // 1. Concentração por corretora
+  const top = Object.entries(c.porCorretora).sort((a,b)=>b[1]-a[1])[0];
+  if(top && c.totalAtual>0){
+    const p = top[1]/c.totalAtual;
+    if(p > 0.7) alerts.push({kind:'red', icon:'⚠️', text:`Você tem <strong>${pct0(p)}</strong> da carteira em <strong>${top[0]}</strong>. Se essa corretora/banco falhar (ver caso Banco Master), você fica exposto. Distribua em pelo menos 2 instituições.`});
+    else if(p > 0.5) alerts.push({kind:'orange', icon:'📊', text:`${pct0(p)} da carteira em <strong>${top[0]}</strong>. Considere distribuir mais.`});
+  }
+
+  // 2. Alvos de bloco
+  ['Preservação','Equilíbrio','Crescimento'].forEach(b=>{
+    const atual = (c.pctBloco[b]||0)*100;
+    const target = alvo[b];
+    const diff = atual - target;
+    if(Math.abs(diff) >= 15){
+      alerts.push({kind:'orange', icon:'⚖️', text:`<strong>${b}</strong> está em ${atual.toFixed(0)}% — alvo pro perfil ${D.perfil} é ${target}%. ${diff>0?'Sobrando':'Faltando'} ~${Math.abs(diff).toFixed(0)}pp.`});
+    }
+  });
+
+  // 3. Reserva de emergência
+  const preservacao = c.porBloco['Preservação']||0;
+  if(preservacao < 0.1 * c.totalAtual && c.totalAtual > 10000){
+    alerts.push({kind:'red', icon:'🚨', text:`Menos de 10% em Preservação. <strong>Risco de precisar vender renda variável em baixa</strong> se der emergência. Forme reserva primeiro.`});
+  }
+
+  // 4. Sem ativos
+  if(c.ativos.length < 3){
+    alerts.push({kind:'blue', icon:'💡', text:`Você tem só ${c.ativos.length} ativo(s). O mínimo saudável é 3-5 em classes diferentes pra diversificar.`});
+  }
+
+  // 5. Excesso cripto
+  const cripto = c.porTipo['Cripto']||0;
+  if(cripto/c.totalAtual > 0.15){
+    alerts.push({kind:'orange', icon:'₿', text:`${pct0(cripto/c.totalAtual)} em cripto — acima do sugerido (≤15%). Cripto tem volatilidade alta.`});
+  }
+
+  // 6. Nenhum DY
+  if(c.proventoMensal === 0 && c.totalAtual > 5000){
+    alerts.push({kind:'blue', icon:'💵', text:`Nenhum ativo pagando provento. Considere incluir <strong>FII ou ações boas pagadoras</strong> pra gerar renda passiva.`});
+  }
+
+  if(alerts.length === 0) alerts.push({kind:'green', icon:'✅', text:`<strong>Sua carteira está equilibrada</strong>. Continue acompanhando mensalmente e ajustando os aportes.`});
+
+  $('alertas').innerHTML = alerts.map(a=>`<div class="alert ${a.kind}"><div class="alert-icon">${a.icon}</div><div>${a.text}</div></div>`).join('');
+
+  // Chart corretoras
+  if(chartCorretoras) chartCorretoras.destroy();
+  const cors = Object.entries(c.porCorretora).sort((a,b)=>b[1]-a[1]);
+  if(cors.length){
+    chartCorretoras = new Chart($('chartCorretoras'),{
+      type:'bar',
+      data:{labels:cors.map(x=>x[0]), datasets:[{data:cors.map(x=>x[1]), backgroundColor:cors.map((_,i)=>['#0D1B2A','#C9A84C','#5B9A3C','#45AAF2','#FF9F43','#C0392B'][i%6]),borderRadius:4}]},
+      options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>fmt(ctx.parsed.x)+' ('+(ctx.parsed.x/c.totalAtual*100).toFixed(0)+'%)'}}},
+        scales:{x:{ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'K':v}}}}
+    });
+  }
+
+  // Chart liquidez
+  if(chartLiquidez) chartLiquidez.destroy();
+  const liq = Object.entries(c.porLiquidez).filter(x=>x[1]>0);
+  if(liq.length){
+    chartLiquidez = new Chart($('chartLiquidez'),{
+      type:'doughnut',
+      data:{labels:liq.map(x=>'Liquidez '+x[0]), datasets:[{data:liq.map(x=>x[1]), backgroundColor:['#5B9A3C','#C9A84C','#C0392B'], borderWidth:0}]},
+      options:{responsive:true, maintainAspectRatio:false, cutout:'60%',
+        plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{label:(ctx)=>ctx.label+': '+fmt(ctx.parsed)}}}}
+    });
+  }
+
+  // Top ativos
+  const top10 = [...c.ativos].sort((a,b)=>(+b.atual||+b.investido||0)-(+a.atual||+a.investido||0)).slice(0,10);
+  if(top10.length){
+    $('topAtivos').innerHTML = top10.map(x=>{
+      const v = +x.atual||+x.investido||0;
+      const p = c.totalAtual>0 ? v/c.totalAtual*100 : 0;
+      const cls = x.bloco === 'Preservação' ? 'preservacao' : x.bloco === 'Equilíbrio' ? 'equilibrio' : 'crescimento';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-light)">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px">${x.nome}</div>
+          <div class="td-mini"><span class="badge ${cls}">${x.bloco}</span> ${x.tipo}</div>
+        </div>
+        <div style="flex:2">
+          <div style="height:8px;background:var(--gray-light);border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${Math.min(100,p)}%;background:var(--gold)"></div>
+          </div>
+        </div>
+        <div style="min-width:110px;text-align:right">
+          <div style="font-weight:600">${fmt(v)}</div>
+          <div class="td-mini">${p.toFixed(1)}%</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ============================================================
+// RENDER — 6 ERROS (análise automática)
+// ============================================================
+function renderErros(){
+  const c = calc();
+  const erros = [];
+
+  // Erro 1 — Banco grande
+  const bancosGrandes = ['Itaú','Bradesco','Santander','BB','Banco do Brasil','Caixa'];
+  const totalBG = c.ativos.filter(a=>bancosGrandes.some(b=>(a.corretora||'').toLowerCase().includes(b.toLowerCase()))).reduce((s,a)=>s+(+a.atual||+a.investido||0),0);
+  const pctBG = c.totalAtual>0 ? totalBG/c.totalAtual : 0;
+  erros.push({
+    num:1, titulo:'Produto de banco grande por comodidade',
+    desc:'Gerente liga, oferece fundo com taxa de 2-3% que come sua rentabilidade.',
+    risco: pctBG > 0.3, pctOuInfo: pctBG>0?`${pct0(pctBG)} da carteira em banco grande`:'Nenhum ativo em banco grande ✓'
+  });
+
+  // Erro 2 — CDI alto sem solidez (heurística: CDB em corretora pequena)
+  const fintechs = ['Nubank','Inter','C6','Will','Neon','PicPay','Banco Master'];
+  const cdbs = c.ativos.filter(a=>a.tipo==='CDB');
+  const cdbsFintech = cdbs.filter(a=>fintechs.some(f=>(a.corretora||'').toLowerCase().includes(f.toLowerCase())));
+  const totalCdbFintech = cdbsFintech.reduce((s,a)=>s+(+a.atual||+a.investido||0),0);
+  const riscoCDI = totalCdbFintech > 250000; // FGC cobre 250k
+  erros.push({
+    num:2, titulo:'Correr atrás do CDI mais alto sem olhar solidez',
+    desc:'CDB de fintech pagando 120% do CDI parece ótimo. Mas acima de R$ 250k não tem FGC cobrindo.',
+    risco: riscoCDI, pctOuInfo: totalCdbFintech>0?`${fmt(totalCdbFintech)} em CDBs de fintech/banco digital${riscoCDI?' — ALÉM do limite FGC':''}`:'Sem CDB em fintech ✓'
+  });
+
+  // Erro 3 — Fugir do Tesouro
+  const tesouro = c.ativos.filter(a=>a.tipo.includes('Tesouro')).reduce((s,a)=>s+(+a.atual||+a.investido||0),0);
+  const pctTesouro = c.totalAtual>0 ? tesouro/c.totalAtual : 0;
+  erros.push({
+    num:3, titulo:'Fugir do Tesouro achando que é coisa de conservador',
+    desc:'Tesouro IPCA+ com 6%+ de juro real travado por 20 anos é uma das melhores decisões possíveis.',
+    risco: pctTesouro < 0.05 && c.totalAtual > 20000, pctOuInfo: tesouro>0?`${pct0(pctTesouro)} em Tesouro (${fmt(tesouro)})`:'Nenhum Tesouro na carteira'
+  });
+
+  // Erro 4 — Previdência em mãos erradas
+  const prev = c.ativos.filter(a=>a.tipo==='Previdência');
+  const prevBancoGrande = prev.filter(a=>bancosGrandes.some(b=>(a.corretora||'').toLowerCase().includes(b.toLowerCase())));
+  erros.push({
+    num:4, titulo:'Previdência nas mãos de quem não entende',
+    desc:'Previdência de banco geralmente tem taxa de 2-3% + carregamento. Melhor em corretora específica.',
+    risco: prevBancoGrande.length > 0, pctOuInfo: prev.length>0?`${prev.length} previdência(s) — ${prevBancoGrande.length>0?'algumas em banco grande ⚠️':'tudo em corretora ✓'}`:'Sem previdência cadastrada'
+  });
+
+  // Erro 5 — Excesso de dólar/internacional
+  const intl = c.ativos.filter(a=>a.tipo.includes('Internacional')).reduce((s,a)=>s+(+a.atual||+a.investido||0),0);
+  const pctIntl = c.totalAtual>0 ? intl/c.totalAtual : 0;
+  erros.push({
+    num:5, titulo:'Achar que dólar resolve tudo',
+    desc:'Dólar protege, mas não é blindagem total. Carteira muito dolarizada corre outro tipo de risco.',
+    risco: pctIntl > 0.5, pctOuInfo: intl>0?`${pct0(pctIntl)} em ativos internacionais${pctIntl>0.5?' — possivelmente excessivo':''}`:'Sem exposição internacional'
+  });
+
+  // Erro 6 — Carteira Frankenstein (muitos tipos)
+  const qtdTipos = Object.keys(c.porTipo).length;
+  const qtdAtivos = c.ativos.length;
+  const riscoFrank = qtdAtivos > 15 || (qtdTipos > 8 && c.totalAtual < 200000);
+  erros.push({
+    num:6, titulo:'Carteira lotada de nomes difíceis achando que é diversificação',
+    desc:'Ter 10 siglas diferentes ≠ diversificar. É coleção de sigla. Diversificar é distribuir risco com critério.',
+    risco: riscoFrank, pctOuInfo: `${qtdAtivos} ativos em ${qtdTipos} tipos diferentes${riscoFrank?' — pode estar disperso demais':''}`
+  });
+
+  $('erroChecklist').innerHTML = erros.map(e=>`
+    <div class="erro-item ${e.risco?'risco':'ok'}">
+      <div class="erro-head">
+        <span class="erro-num">ERRO ${e.num}</span>
+        <span class="erro-titulo">${e.titulo}</span>
+        <span class="erro-status" style="color:${e.risco?'var(--red)':'var(--green)'}">${e.risco?'⚠ Revisar':'✓ OK'}</span>
+      </div>
+      <div class="erro-desc">${e.desc}</div>
+      <div style="margin-top:8px;padding:6px 10px;background:rgba(255,255,255,0.5);border-radius:var(--radius-sm);font-size:12px"><strong>Sua carteira:</strong> ${e.pctOuInfo}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// RENDER — PROVENTOS
+// ============================================================
+function renderProventos(){
+  const p = D.proventos || [];
+  const c = calc();
+
+  // Tabela
+  if(!p.length){
+    $('proventosTable').innerHTML = `<div class="empty"><div class="empty-icon">💰</div><h3>Nenhum provento registrado ainda</h3><p>Registre os dividendos, JCP e aluguéis que você recebe mensalmente pra acompanhar a formação da sua renda passiva.</p><button class="btn primary" onclick="abrirModalProvento()">+ Registrar primeiro provento</button></div>`;
+  } else {
+    const sorted = [...p].sort((a,b)=>b.data.localeCompare(a.data));
+    $('proventosTable').innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Data</th><th>Ativo</th><th>Tipo</th><th class="text-right">Valor</th><th></th></tr></thead>
+      <tbody>${sorted.map(x=>`<tr>
+        <td>${formatDateBR(x.data)}</td>
+        <td>${x.ativo}</td>
+        <td>${x.tipo}</td>
+        <td class="td-num" style="color:var(--green-dark);font-weight:600">${fmt2(x.valor)}</td>
+        <td class="td-center"><button class="btn xs danger" onclick="excluirProvento('${x.id}')">🗑</button></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`;
+  }
+
+  // Chart por mês (últimos 12)
+  if(chartProventos) chartProventos.destroy();
+  const mesesLabels = [];
+  const mesesVals = [];
+  const agora = new Date();
+  for(let i=11;i>=0;i--){
+    const d = new Date(agora.getFullYear(), agora.getMonth()-i, 1);
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    mesesLabels.push(['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][d.getMonth()]+'/'+String(d.getFullYear()).slice(2));
+    const total = p.filter(x=>x.data && x.data.startsWith(key)).reduce((s,x)=>s+(+x.valor||0),0);
+    mesesVals.push(total);
+  }
+  if($('chartProventos')){
+    chartProventos = new Chart($('chartProventos'),{
+      type:'bar',
+      data:{labels:mesesLabels, datasets:[{data:mesesVals, backgroundColor:'#5B9A3C', borderRadius:4}]},
+      options:{responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>fmt2(ctx.parsed.y)}}}}
+    });
+  }
+
+  // Projeção renda passiva
+  const mensal = c.proventoMensal;
+  const anual = mensal*12;
+  const meta5k = 5000;
+  const meta10k = 10000;
+  const anosPara5k = mensal<5000 && mensal>0 ? ((meta5k/mensal)-1).toFixed(1) : null;
+  $('projecaoRenda').innerHTML = `
+    <div style="margin-bottom:14px">
+      <div class="kpi-label">Renda passiva atual (baseada no cadastro de ativos)</div>
+      <div style="font-size:28px;font-weight:700;color:var(--green-dark)">${fmt(mensal)}/mês</div>
+      <div style="font-size:13px;color:var(--text-muted)">${fmt(anual)} por ano</div>
+    </div>
+    <div style="padding:14px;background:var(--gold-bg);border-radius:var(--radius-sm)">
+      <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">🎯 Até R$ 5.000/mês</div>
+      <div style="font-size:13px">Faltam <strong>${fmt(Math.max(0, meta5k-mensal))}/mês</strong> ${mensal>=5000?'✅ META BATIDA':''}</div>
+      <div class="bloco-bar" style="margin-top:8px"><div class="bloco-bar-fill" style="width:${Math.min(100,mensal/meta5k*100)}%;background:var(--gold)"></div></div>
+    </div>
+    <div style="padding:14px;background:var(--green-bg);border-radius:var(--radius-sm);margin-top:10px">
+      <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">🎯 Até R$ 10.000/mês (liberdade)</div>
+      <div style="font-size:13px">Faltam <strong>${fmt(Math.max(0, meta10k-mensal))}/mês</strong> ${mensal>=10000?'✅ LIBERDADE':''}</div>
+      <div class="bloco-bar" style="margin-top:8px"><div class="bloco-bar-fill" style="width:${Math.min(100,mensal/meta10k*100)}%;background:var(--green)"></div></div>
+    </div>
+  `;
+}
+
+function formatDateBR(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// ============================================================
+// MODAIS
+// ============================================================
+function abrirModalAtivo(id){
+  const modal = $('modalAtivo');
+  if(id){
+    const a = D.ativos.find(x=>x.id===id);
+    if(!a) return;
+    $('modalAtivoTitle').textContent = 'Editar ativo';
+    $('ativoId').value = a.id;
+    $('ativoNome').value = a.nome||'';
+    $('ativoTipo').value = a.tipo||'';
+    $('ativoBloco').value = a.bloco||'Equilíbrio';
+    $('ativoCorretora').value = a.corretora||'';
+    $('ativoInvestido').value = a.investido||'';
+    $('ativoAtual').value = a.atual||'';
+    $('ativoProvento').value = a.provento||'';
+    $('ativoData').value = a.data||'';
+    $('ativoNotas').value = a.notas||'';
+    $('btnExcluirAtivo').style.display = 'inline-flex';
+  } else {
+    $('modalAtivoTitle').textContent = 'Novo ativo';
+    ['ativoId','ativoNome','ativoTipo','ativoCorretora','ativoInvestido','ativoAtual','ativoProvento','ativoData','ativoNotas'].forEach(k=>$(k).value='');
+    $('ativoBloco').value = 'Equilíbrio';
+    $('btnExcluirAtivo').style.display = 'none';
+  }
+  modal.classList.add('open');
+}
+function fecharModalAtivo(){ $('modalAtivo').classList.remove('open'); }
+
+function sugerirBloco(){
+  const tipo = $('ativoTipo').value;
+  if(BLOCO_POR_TIPO[tipo]) $('ativoBloco').value = BLOCO_POR_TIPO[tipo];
+}
+
+function salvarAtivo(){
+  const nome = $('ativoNome').value.trim();
+  const tipo = $('ativoTipo').value;
+  const investido = parseFloat($('ativoInvestido').value) || 0;
+  if(!nome){ toast('Preencha o nome', 'error'); return; }
+  if(!tipo){ toast('Selecione o tipo', 'error'); return; }
+  if(investido <= 0){ toast('Valor investido precisa ser maior que zero', 'error'); return; }
+
+  const ativo = {
+    id: $('ativoId').value || genId(),
+    nome, tipo,
+    bloco: $('ativoBloco').value,
+    corretora: $('ativoCorretora').value.trim(),
+    investido,
+    atual: parseFloat($('ativoAtual').value) || investido,
+    provento: parseFloat($('ativoProvento').value) || 0,
+    data: $('ativoData').value || '',
+    notas: $('ativoNotas').value.trim()
+  };
+  const idx = D.ativos.findIndex(x=>x.id===ativo.id);
+  if(idx>=0) D.ativos[idx] = ativo; else D.ativos.push(ativo);
+  save();
+  fecharModalAtivo();
+  toast(idx>=0?'Ativo atualizado':'Ativo adicionado', 'success');
+  renderAll();
+}
+
+function excluirAtivo(){
+  const id = $('ativoId').value;
+  if(!id) return;
+  if(!confirm('Excluir esse ativo? Esta ação não pode ser desfeita.')) return;
+  D.ativos = D.ativos.filter(x=>x.id!==id);
+  save();
+  fecharModalAtivo();
+  toast('Ativo removido', 'success');
+  renderAll();
+}
+
+function abrirModalProvento(){
+  if(!D.ativos.length){ toast('Cadastre pelo menos um ativo antes', 'error'); return; }
+  $('provAtivo').innerHTML = D.ativos.map(a=>`<option value="${a.nome}">${a.nome} (${a.tipo})</option>`).join('');
+  $('provData').value = new Date().toISOString().slice(0,10);
+  $('provTipo').value = 'Dividendo';
+  $('provValor').value = '';
+  $('modalProvento').classList.add('open');
+}
+function fecharModalProvento(){ $('modalProvento').classList.remove('open'); }
+
+function salvarProvento(){
+  const valor = parseFloat($('provValor').value) || 0;
+  if(valor <= 0){ toast('Valor inválido', 'error'); return; }
+  D.proventos.push({
+    id: genId(),
+    ativo: $('provAtivo').value,
+    data: $('provData').value,
+    tipo: $('provTipo').value,
+    valor
+  });
+  save();
+  fecharModalProvento();
+  toast('Provento registrado', 'success');
+  renderAll();
+}
+
+function excluirProvento(id){
+  if(!confirm('Excluir esse registro?')) return;
+  D.proventos = D.proventos.filter(x=>x.id!==id);
+  save();
+  renderAll();
+}
+
+// ============================================================
+// TABS
+// ============================================================
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  event && event.currentTarget && event.currentTarget.classList.add('active');
+  const idx = ['dashboard','carteira','raiox','erros','proventos'].indexOf(name);
+  if(idx>=0) document.querySelectorAll('.tab')[idx].classList.add('active');
+  $('tab-'+name).classList.add('active');
+  // re-render tab-specific
+  if(name==='dashboard') renderDashboard();
+  if(name==='carteira') renderCarteira();
+  if(name==='raiox') renderRaiox();
+  if(name==='erros') renderErros();
+  if(name==='proventos') renderProventos();
+}
+
+function renderAll(){
+  renderDashboard();
+  renderCarteira();
+  renderRaiox();
+  renderErros();
+  renderProventos();
+}
+
+// ============================================================
+// WELCOME / DEMO
+// ============================================================
+function fecharWelcome(){ D.welcomeClosed = true; save(); $('welcome').style.display='none'; }
+
+function carregarDemo(){
+  if(D.ativos.length && !confirm('Isso vai substituir os dados atuais pelos dados de exemplo. Continuar?')) return;
+  D.ativos = [
+    {id:genId(), nome:'Conta Remunerada BTG', tipo:'Reserva', bloco:'Preservação', corretora:'BTG', investido:25000, atual:25000, provento:250, data:'2025-01-15', notas:'100% CDI'},
+    {id:genId(), nome:'CDB Inter 120% CDI', tipo:'CDB', bloco:'Preservação', corretora:'Inter', investido:30000, atual:32100, provento:0, data:'2024-06-10', notas:'Vence 2027'},
+    {id:genId(), nome:'Tesouro Selic 2029', tipo:'Tesouro Selic', bloco:'Preservação', corretora:'BTG', investido:15000, atual:15800, provento:0, data:'2024-03-01'},
+    {id:genId(), nome:'Tesouro IPCA+ 2035', tipo:'Tesouro IPCA+', bloco:'Equilíbrio', corretora:'BTG', investido:40000, atual:43200, provento:0, data:'2024-01-20', notas:'IPCA+6%'},
+    {id:genId(), nome:'Previdência XP Trend', tipo:'Previdência', bloco:'Equilíbrio', corretora:'XP', investido:25000, atual:27500, provento:0, data:'2023-12-01'},
+    {id:genId(), nome:'Debênture Eneva', tipo:'Debênture', bloco:'Equilíbrio', corretora:'BTG', investido:10000, atual:10800, provento:0, data:'2024-08-15'},
+    {id:genId(), nome:'ITSA4', tipo:'Ação BR', bloco:'Crescimento', corretora:'BTG', investido:12000, atual:13500, provento:85, data:'2024-02-10'},
+    {id:genId(), nome:'KDIF11', tipo:'FII', bloco:'Crescimento', corretora:'BTG', investido:18000, atual:18900, provento:180, data:'2024-05-20', notas:'FII de papel'},
+    {id:genId(), nome:'HGLG11', tipo:'FII', bloco:'Crescimento', corretora:'BTG', investido:15000, atual:14800, provento:130, data:'2024-04-05', notas:'FII de tijolo logístico'},
+    {id:genId(), nome:'IVVB11', tipo:'ETF Internacional', bloco:'Crescimento', corretora:'BTG', investido:20000, atual:22500, provento:0, data:'2024-01-05', notas:'S&P 500'},
+  ];
+  D.proventos = [];
+  const hoje = new Date();
+  // gera 6 meses de proventos simulados
+  for(let m=5; m>=0; m--){
+    const d = new Date(hoje.getFullYear(), hoje.getMonth()-m, 15);
+    const key = d.toISOString().slice(0,10);
+    D.proventos.push({id:genId(), ativo:'ITSA4', data:key, tipo:'Dividendo', valor:85});
+    D.proventos.push({id:genId(), ativo:'KDIF11', data:key, tipo:'Aluguel FII', valor:180});
+    D.proventos.push({id:genId(), ativo:'HGLG11', data:key, tipo:'Aluguel FII', valor:130});
+    D.proventos.push({id:genId(), ativo:'Conta Remunerada BTG', data:key, tipo:'Dividendo', valor:250});
+  }
+  save();
+  toast('Dados de exemplo carregados ✓', 'success');
+  renderAll();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+load();
+if(D.welcomeClosed) $('welcome').style.display='none';
+// atualiza chip da data
+const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+$('dataChip').textContent = '📅 '+monthNames[new Date().getMonth()]+'/'+new Date().getFullYear();
+renderAll();
+</script>
+
+</body>
+</html>
